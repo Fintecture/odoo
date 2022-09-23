@@ -30,6 +30,6 @@
         "static/description/main.png"
     ],
     "currency": "EUR",
-    "price": 99.90,
+    "price": 0.00,
     'license': 'LGPL-3',
 }
