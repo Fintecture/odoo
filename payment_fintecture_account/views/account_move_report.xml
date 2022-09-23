@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="account_invoice_document_inherit" inherit_id="account.report_invoice_document">
+        <xpath expr="//p[@name='payment_term']" position="after">
+            <div class="clearfix" t-if="o.state not in ['draft'] and o.fintecture_is_enabled"
+                 style="page-break-inside: avoid">
+                <div class="row my-2" t-if="o.fintecture_invoice_link_qr">
+                    <div class="col-8">
+                        You can pay via Fintecture (direct transfer bank)
+                        <a t-att-href="o.fintecture_payment_link"
+                           target="_blank" rel="noopener">
+                            <strong>by clicking here</strong>
+                        </a>
+                        or scanning the QR code.
+                    </div>
+                    <div class="col-4">
+                        <div class="py-1"
+                             style="text-align:center;background-image:url('/payment_fintecture/static/src/img/qr_container.svg');background-size:contain;background-repeat:no-repeat;background-position:center center">
+                            <img t-attf-src="data:image/png;base64,#{o.fintecture_payment_qr}"
+                                 style="max-width: 120px; max-height: 120px;"/>
+                        </div>
+                    </div>
+                </div>
+                <div t-if="o.fintecture_invoice_viban" class="row mb-2">
+                    <div class="col-auto">
+                        <div name="fintecture_viban_text">
+                            You can pay via bank transfer in this bank account:
+                        </div>
+                        <div name="fintecture_viban_beneficiary" class="px-2">
+                            <span>Beneficiary:</span>
+                            <strong t-esc="o.fintecture_iban_holder"/>
+                        </div>
+                        <div name="fintecture_viban_account" class="px-2">
+                            <span>IBAN:</span>
+                            <strong t-esc="o.fintecture_iban_account"/>
+                        </div>
+                        <div name="fintecture_viban_bic_swift" class="px-2">
+                            <span>BIC/SWIFT:</span>
+                            <strong t-esc="o.fintecture_iban_swift_bic"/>
+                        </div>
+                        <div name="fintecture_viban_reference" class="px-2">
+                            <span>Reference:</span>
+                            <strong t-esc="o.name"/>
+                        </div>
+                    </div>
+                </div>
+                <div t-if="o.fintecture_invoice_link_qr or o.fintecture_invoice_viban">
+                    <div name="fintecture_viban_alert" style="padding:1em;background:#f8e7d3;border-radius:8px;">
+                        <span class="my-0">
+                            <svg width="18" height="17" viewBox="0 0 18 20" fill="none"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8.99984 11.5001C8.5396 11.5001 8.1665 11.8732 8.1665 12.3334C8.1665 12.7937 8.5396 13.1667 8.99984 13.1667C9.46007 13.1667 9.83317 12.7937 9.83317 12.3334C9.83317 11.8732 9.46007 11.5001 8.99984 11.5001Z"
+                                      fill="#EE912A"/>
+                                <path d="M8.99984 10.6667C9.46009 10.6667 9.83317 10.3573 9.83317 9.97557V5.5246C9.83317 5.14286 9.46009 4.83342 8.99984 4.83342C8.53959 4.83342 8.1665 5.14286 8.1665 5.5246L8.1665 9.97557C8.1665 10.3573 8.53959 10.6667 8.99984 10.6667Z"
+                                      fill="#EE912A"/>
+                                <path d="M8.99984 0.666748C4.39984 0.666748 0.666504 4.40008 0.666504 9.00008C0.666504 13.6001 4.39984 17.3334 8.99984 17.3334C13.5998 17.3334 17.3332 13.6001 17.3332 9.00008C17.3332 4.40008 13.5998 0.666748 8.99984 0.666748ZM8.99984 15.6667C5.32484 15.6667 2.33317 12.6751 2.33317 9.00008C2.33317 5.32508 5.32484 2.33341 8.99984 2.33341C12.6748 2.33341 15.6665 5.32508 15.6665 9.00008C15.6665 12.6751 12.6748 15.6667 8.99984 15.6667Z"
+                                      fill="#EE912A"/>
+                            </svg>
+                        </span>
+                        <span style="color:#EE912A" class="my-0 pt-1">
+                            Since
+                            <span t-field="o.fintecture_first_use_date"/>,
+                        </span>
+                        <span class="my-0 pt-1">
+                            our IBAN has changed. Please use the IBAN above to make your bank transfer.
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

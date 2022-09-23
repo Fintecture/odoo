@@ -1,0 +1,203 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* payment_fintecture_sale
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-09-21 06:47+0000\n"
+"PO-Revision-Date: 2022-09-21 06:47+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: payment_fintecture_sale
+#: model:mail.template,body_html:payment_fintecture_sale.email_template_edi_sale_fintecture_payment_link
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"                <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                    <t t-set=\"doc_name\" t-value=\"'quotation' if object.state in ('draft', 'sent') else 'order'\"/>\n"
+"                    Hello,\n"
+"                    <br/>\n"
+"                    <br/>\n"
+"                    Your\n"
+"                    <t t-if=\"ctx.get('proforma')\">\n"
+"                        Pro forma invoice for\n"
+"                        <t t-out=\"doc_name or ''\">quotation</t>\n"
+"                        <strong t-out=\"object.name or ''\">S00052</strong>\n"
+"                        <t t-if=\"object.origin\">\n"
+"                            (with reference: <t t-out=\"object.origin or ''\"/> )\n"
+"                        </t>\n"
+"                        amounting in <strong t-out=\"format_amount(object.amount_total, object.pricelist_id.currency_id) or ''\">$ 10.00\n"
+"                    </strong> is available.\n"
+"                    </t>\n"
+"                    <t t-else=\"\">\n"
+"                        <t t-out=\"doc_name or ''\">quotation</t>\n"
+"                        <strong t-out=\"object.name or ''\"/>\n"
+"                        <t t-if=\"object.origin\">\n"
+"                            (with reference: <t t-out=\"object.origin or ''\">S00052</t> )\n"
+"                        </t>\n"
+"                        amounting in <strong t-out=\"format_amount(object.amount_total, object.pricelist_id.currency_id) or ''\">$ 10.00\n"
+"                    </strong> is ready for review.\n"
+"                    </t>\n"
+"                    <br/>\n"
+"                    <br/>\n"
+"                    In order to validate the transaction for an amount of <strong t-out=\"format_amount(object.amount_total, object.pricelist_id.currency_id) or ''\">$ 10.00\n"
+"                </strong>, click on the button below:\n"
+"                    <br/>\n"
+"                </p>\n"
+"                <p style=\"text-align: center\" class=\"mt-2\">\n"
+"                    <a style=\"background-color:#0a1643;color:white;\" class=\"btn btn-primary\" t-att-href=\"object.fintecture_payment_link\" target=\"_blank\" rel=\"noopener\">\n"
+"                        <strong>Pay now</strong>\n"
+"                    </a>\n"
+"                    <br/>\n"
+"                    OR scan the QR code.\n"
+"                    <br/>\n"
+"                    <div class=\"py-1\" style=\"text-align:center;background-image:url('/payment_fintecture/static/src/img/qr_container.svg');background-size:contain;background-repeat:no-repeat;background-position:center center\">\n"
+"                        <img t-attf-src=\"data:image/png;base64,#{object.fintecture_payment_qr}\" style=\"max-width: 120px; max-height: 120px;\"/>\n"
+"                    </div>\n"
+"                    <br/>\n"
+"                    <br/>\n"
+"                </p>\n"
+"                <p>\n"
+"                    Do not hesitate to contact us if you have any questions.\n"
+"                    <br/>\n"
+"                </p>\n"
+"            </div>\n"
+"        "
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model_terms:ir.ui.view,arch_db:payment_fintecture_sale.sale_order_document_inherit
+msgid ""
+"<span class=\"my-0 pt-1\">\n"
+"                            our IBAN has changed. Please use the IBAN above to make your bank transfer.\n"
+"                        </span>"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model_terms:ir.ui.view,arch_db:payment_fintecture_sale.sale_order_document_inherit
+msgid "<span>BIC/SWIFT:</span>"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model_terms:ir.ui.view,arch_db:payment_fintecture_sale.sale_order_document_inherit
+msgid "<span>Beneficiary:</span>"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model_terms:ir.ui.view,arch_db:payment_fintecture_sale.sale_order_document_inherit
+msgid "<span>IBAN:</span>"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model_terms:ir.ui.view,arch_db:payment_fintecture_sale.sale_order_document_inherit
+msgid "<span>Reference:</span>"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model_terms:ir.ui.view,arch_db:payment_fintecture_sale.sale_order_document_inherit
+msgid "<strong>by clicking here</strong>"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model:ir.model.fields,field_description:payment_fintecture_sale.field_sale_order__fintecture_iban_swift_bic
+msgid "Fintecture IBAN SWIFT/BIC"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model:ir.model.fields,field_description:payment_fintecture_sale.field_sale_order__fintecture_iban_account
+msgid "Fintecture IBAN account"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model:ir.model.fields,field_description:payment_fintecture_sale.field_sale_order__fintecture_iban_bank_address
+msgid "Fintecture IBAN bank address"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model:ir.model.fields,field_description:payment_fintecture_sale.field_sale_order__fintecture_iban_bank_name
+msgid "Fintecture IBAN bank name"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model:ir.model.fields,field_description:payment_fintecture_sale.field_sale_order__fintecture_iban_holder
+msgid "Fintecture IBAN holder"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model:ir.model.fields,field_description:payment_fintecture_sale.field_sale_order__fintecture_payment_qr
+msgid "Fintecture QR"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model:ir.model.fields,field_description:payment_fintecture_sale.field_sale_order__fintecture_is_enabled
+msgid "Fintecture enabled"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model:ir.model.fields,field_description:payment_fintecture_sale.field_sale_order__fintecture_first_use_date
+msgid "Fintecture first time used"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model:ir.model.fields,field_description:payment_fintecture_sale.field_sale_order__fintecture_payment_link
+msgid "Fintecture payment link"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model:ir.model.fields,field_description:payment_fintecture_sale.field_sale_order__fintecture_sale_link_qr
+msgid "Include link/QR in quotes"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model:ir.model.fields,field_description:payment_fintecture_sale.field_sale_order__fintecture_sale_viban
+msgid "Include virtual IBAN in quotes"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model:ir.model,name:payment_fintecture_sale.model_sale_order
+msgid "Sales Order"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model:mail.template,name:payment_fintecture_sale.email_template_edi_sale_fintecture_payment_link
+msgid "Sales Order: Send by email with Fintecture Payment Link"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model_terms:ir.ui.view,arch_db:payment_fintecture_sale.sale_order_document_inherit
+msgid "Since"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model_terms:ir.ui.view,arch_db:payment_fintecture_sale.sale_order_document_inherit
+msgid "You can pay via Fintecture (direct transfer bank)"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model_terms:ir.ui.view,arch_db:payment_fintecture_sale.sale_order_document_inherit
+msgid "You can pay via bank transfer in this bank account:"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model_terms:ir.ui.view,arch_db:payment_fintecture_sale.sale_order_document_inherit
+msgid "or scanning the QR code."
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model:mail.template,report_name:payment_fintecture_sale.email_template_edi_sale_fintecture_payment_link
+msgid "{{ (object.name or '').replace('/','_') }}"
+msgstr ""
+
+#. module: payment_fintecture_sale
+#: model:mail.template,subject:payment_fintecture_sale.email_template_edi_sale_fintecture_payment_link
+msgid ""
+"{{ object.company_id.name }} {{ object.state in ('draft', 'sent') and (ctx.get('proforma')\n"
+"            and 'Proforma' or 'Quotation') or 'Order' }} (Ref {{ object.name or 'n/a' }})\n"
+"        "
+msgstr ""
