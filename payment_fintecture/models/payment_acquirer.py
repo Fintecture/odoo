@@ -600,8 +600,7 @@ class PaymentAcquirer(models.Model):
         self.ensure_one()
         trx = self.env['payment.transaction'].sudo().search([
             ('reference', '=', values.get('reference')),
-            ('acquirer_id.provider', '=', PAYMENT_ACQUIRER_NAME),
-            ('company_id', '=', self.company_id.id)
+            ('acquirer_id', '=', self.id),
         ], limit=1)
         if not trx:
             return values
