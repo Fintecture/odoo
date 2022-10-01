@@ -12,7 +12,7 @@ from odoo.exceptions import ValidationError, UserError
 
 from odoo.addons.payment_fintecture import utils as fintecture_utils
 from odoo.addons.payment_fintecture.const import API_VERSION, PROXY_URL, WEBHOOK_HANDLED_EVENTS, CALLBACK_URL, \
-    WEBHOOK_URL, PAYMENT_ACQUIRER_NAME
+    WEBHOOK_URL, PAYMENT_ACQUIRER_NAME, CHECKOUT_URL
 
 _logger = logging.getLogger(__name__)
 
@@ -595,3 +595,6 @@ class PaymentAcquirer(models.Model):
             _logger.error('|PaymentAcquirer| An error occur when trying to authenticate through oAuth...')
             _logger.error('|PaymentAcquirer| ERROR {0}'.format(str(e)))
             raise UserError(_('Invalid authentication. Check your credential in payment acquirer configuration page.'))
+
+    def fintecture_get_form_action_url(self):
+        return CHECKOUT_URL

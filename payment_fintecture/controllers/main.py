@@ -1,27 +1,19 @@
-import hashlib
-import hmac
-import json
+import logging
+import collections
 import logging
 import pprint
-import collections
 
-from datetime import datetime
+from odoo.addons.payment_fintecture.const import CALLBACK_URL, WEBHOOK_URL, CHECKOUT_URL, VALIDATION_URL, \
+    PAYMENT_ACQUIRER_NAME
 
 from odoo import http, SUPERUSER_ID
-from odoo.exceptions import ValidationError
 from odoo.http import request
-from odoo.tools import consteq
-
-from odoo.addons.payment_fintecture import utils as fintecture_utils
-from odoo.addons.payment_fintecture.const import CALLBACK_URL, WEBHOOK_URL, CHECKOUT_URL, VALIDATION_URL, \
-    WEBHOOK_AGE_TOLERANCE, PAYMENT_ACQUIRER_NAME
 
 _logger = logging.getLogger(__name__)
 
 
 class FintectureController(http.Controller):
 
-    # TODO: remove me!
     @http.route(CHECKOUT_URL, type='http', auth='public', csrf=False)
     def fintecture_return_from_checkout(self, **data):
         """ Process the data returned by Fintecture after redirection for checkout.
@@ -47,7 +39,6 @@ class FintectureController(http.Controller):
         # Redirect the user to the status page
         return request.redirect('/payment/status')
 
-    # TODO: remove me!
     @http.route(VALIDATION_URL, type='http', auth='public', csrf=False)
     def fintecture_return_from_validation(self, **data):
         """ Process the data returned by Fintecture after redirection for validation.
