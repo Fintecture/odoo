@@ -303,38 +303,3 @@ class PaymentTransaction(models.Model):
         img.save(temp, format="PNG")
         qr_img = base64.b64encode(temp.getvalue())
         return qr_img
-
-    def fintecture_form_generate_values(self, values):
-        self.ensure_one()
-        logging.info('--- ENTRO AQUÍ ---')
-        fintecture_tx_values = dict(values)
-        if not self.fintecture_payment_intent or not self.fintecture_url:
-            data = self._fintecture_create_request_pay()
-            logging.info(data)
-        logging.info(self.fintecture_url)
-        temp_fintecture_tx_values = {
-            'x_amount': self.amount,
-            'x_show_form': 'PAYMENT_FORM',
-            'x_type': 'AUTH_CAPTURE' if not self.capture_manually else 'AUTH_ONLY',
-            'x_method': 'CC',
-            'address': values.get('partner_address'),
-            'city': values.get('partner_city'),
-            'country': values.get('partner_country') and values.get('partner_country').name or '',
-            'email': values.get('partner_email'),
-            'zip_code': values.get('partner_zip'),
-            'first_name': values.get('partner_first_name'),
-            'last_name': values.get('partner_last_name'),
-            'phone': values.get('partner_phone'),
-            'billing_address': values.get('billing_partner_address'),
-            'billing_city': values.get('billing_partner_city'),
-            'billing_country': values.get('billing_partner_country') and values.get(
-                'billing_partner_country').name or '',
-            'billing_email': values.get('billing_partner_email'),
-            'billing_zip_code': values.get('billing_partner_zip'),
-            'billing_first_name': values.get('billing_partner_first_name'),
-            'billing_last_name': values.get('billing_partner_last_name'),
-            'billing_phone': values.get('billing_partner_phone'),
-            'fintecture_url': self.fintecture_url
-        }
-        fintecture_tx_values.update(temp_fintecture_tx_values)
-        return fintecture_tx_values

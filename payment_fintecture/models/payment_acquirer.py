@@ -596,5 +596,24 @@ class PaymentAcquirer(models.Model):
             _logger.error('|PaymentAcquirer| ERROR {0}'.format(str(e)))
             raise UserError(_('Invalid authentication. Check your credential in payment acquirer configuration page.'))
 
+    def fintecture_form_generate_values(self, values):
+        self.ensure_one()
+        trx = self.env['payment.transaction'].sudo().search([
+            ('reference', '=', values.get('reference')),
+            ('acquirer_id.provider', '=', PAYMENT_ACQUIRER_NAME),
+            ('company_id', '=', self.company_id.id)
+        ], limit=1)
+        if not trx:
+            return values
+        fintecture_tx_values = dict(values)
+        if not trx.fintecture_payment_intent or not trx.fintecture_url:
+            data = trx._fintecture_create_request_pay()
+            logging.info(data)
+        temp_fintecture_tx_values = {
+            'fintecture_url': self.fintecture_url
+        }
+        fintecture_tx_values.update(temp_fintecture_tx_values)
+        return fintecture_tx_values
+
     def fintecture_get_form_action_url(self):
         return CHECKOUT_URL
