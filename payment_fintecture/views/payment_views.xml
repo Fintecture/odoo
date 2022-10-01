@@ -145,10 +145,12 @@
                     <field name="fintecture_viban_unique_key"/>
                 </group>
             </xpath>
-            <xpath expr="//field[@name='payment_icon_ids']">
+            <xpath expr="//field[@name='payment_icon_ids']" position="replace">
                 <field widget="many2many_tags" name="payment_icon_ids"
                        attrs="{'invisible': [('provider', '!=', 'fintecture')]}"
                 />
+            </xpath>
+            <xpath expr="//field[@name='view_template_id']" position="replace">
                 <field name="view_template_id" groups="base.group_no_one"
                        attrs="{'invisible': [('provider', '!=', 'fintecture')]}"
                 />
