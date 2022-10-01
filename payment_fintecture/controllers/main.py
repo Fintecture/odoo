@@ -20,6 +20,11 @@ class FintectureController(http.Controller):
 
         :param dict data: The GET params appended to the URL in `_fintecture_create_checkout_session`
         """
+
+        fintecture_url = data.get('fintecture_url')
+        if fintecture_url:
+            return request.redirect(fintecture_url)
+
         # Retrieve the tx and acquirer based on the tx reference included in the return url
         tx_sudo = request.env['payment.transaction'].sudo()._get_tx_from_feedback_data(
             PAYMENT_ACQUIRER_NAME, data
