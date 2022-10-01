@@ -3,15 +3,7 @@
     <data noupdate="0">
         <template id="fintecture_form">
             <input type="hidden" name="data_set" t-att-data-action-url="tx_url" data-remove-me=""/>
-            <input type="hidden" name="merchantReference" t-att-value="merchantReference"/>
-            <input type="hidden" name="paymentAmount" t-att-value="paymentAmount"/>
-            <input type="hidden" name="currencyCode" t-att-value="currencyCode"/>
-            <input type="hidden" name="shipBeforeDate" t-att-value="shipBeforeDate"/>
-            <input type="hidden" name="skinCode" t-att-value="skinCode"/>
-            <input type="hidden" name="merchantAccount" t-att-value="merchantAccount"/>
-            <input type="hidden" name="shopperLocale" t-att-value="shopperLocale"/>
-            <input type="hidden" name="sessionValidity" t-att-value="sessionValidity"/>
-            <input type="hidden" name="merchantSig" t-att-value="merchantSig"/>
+            <input type="hidden" name="fintecture_url" t-att-value="fintecture_url"/>
         </template>
     </data>
 </odoo>
