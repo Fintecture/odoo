@@ -150,11 +150,6 @@
                        attrs="{'invisible': [('provider', '=', 'fintecture')]}"
                 />
             </xpath>
-            <xpath expr="//field[@name='view_template_id']" position="replace">
-                <field name="view_template_id" groups="base.group_no_one"
-                       attrs="{'invisible': [('provider', '=', 'fintecture')]}"
-                />
-            </xpath>
         </field>
     </record>
 
