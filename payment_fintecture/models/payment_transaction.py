@@ -6,13 +6,11 @@ import base64
 import json
 
 from io import BytesIO
-from werkzeug import urls
 from datetime import date
 
 from odoo import SUPERUSER_ID, _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
-from odoo.addons.payment import utils as payment_utils
 from odoo.addons.payment_fintecture import utils as fintecture_utils
 from odoo.addons.payment_fintecture.const import INTENT_STATUS_MAPPING, PAYMENT_METHOD_TYPES, CHECKOUT_URL, \
     VALIDATION_URL, CALLBACK_URL, PAYMENT_ACQUIRER_NAME
@@ -275,7 +273,7 @@ class PaymentTransaction(models.Model):
         pay_data = self.acquirer_id.fintecture_pis_create_request_to_pay(
             lang_code=lang,
             partner_id=self.partner_id,
-            amount=payment_utils.to_minor_currency_units(self.amount, self.currency_id) / 100,
+            amount=fintecture_utils.to_minor_currency_units(self.amount, self.currency_id) / 100,
             currency_id=self.currency_id,
             reference=self.reference,
             state=state,
