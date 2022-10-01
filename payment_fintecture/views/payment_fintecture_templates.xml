@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <template id="fintecture_form">
+            <input type="hidden" name="data_set" t-att-data-action-url="tx_url" data-remove-me=""/>
+            <!-- URLs -->
+            <input type="hidden" name='resURL' t-att-value="resURL"/>
+            <!-- custom -->
+            <input t-if="merchantReturnData" type="hidden" name='merchantReturnData' t-att-value="merchantReturnData"/>
+        </template>
+    </data>
+</odoo>
+

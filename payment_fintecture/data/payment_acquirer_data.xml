@@ -24,6 +24,7 @@
                 </li>
             </ul>
         </field>
+        <field name="view_template_id" ref="fintecture_form"/>
         <field name="display_as">Pay by Secured Transfer</field>
     </record>
 
