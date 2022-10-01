@@ -307,8 +307,10 @@ class PaymentTransaction(models.Model):
     def fintecture_form_generate_values(self, values):
         self.ensure_one()
         fintecture_tx_values = dict(values)
-        if not self.fintecture_payment_intent:
-            self._fintecture_create_request_pay()
+        if not self.fintecture_payment_intent or not self.fintecture_url:
+            data = self._fintecture_create_request_pay()
+            logging.info(data)
+        logging.info(self.fintecture_url)
         temp_fintecture_tx_values = {
             'x_amount': self.amount,
             'x_show_form': 'PAYMENT_FORM',
