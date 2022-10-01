@@ -149,6 +149,17 @@ class PaymentAcquirer(models.Model):
             'show_cancel_msg': False,
         })
 
+    def _get_feature_support(self):
+        """Get advanced feature support by provider.
+
+        Each provider should add its technical in the corresponding
+        key for the following features:
+            * tokenize: support saving payment data in a payment.tokenize
+                        object
+        """
+        res = super(PaymentAcquirer, self)._get_feature_support()
+        return res
+
     # === CONSTRAINT METHODS ===#
 
     @api.constrains('state', 'fintecture_ais_app_id', 'fintecture_app_secret')
