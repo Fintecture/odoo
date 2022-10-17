@@ -67,6 +67,6 @@ class AccountPayment(models.Model):
                     trx.write(trx_data)
             else:
                 trx = trxs[-1]
-            trx._get_processing_values()
+            trx._get_fintecture_processing_values()
             pay.fintecture_payment_link = trx.fintecture_url
             pay.fintecture_payment_qr = trx.fintecture_create_qr()

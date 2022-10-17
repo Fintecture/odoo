@@ -24,7 +24,7 @@ class FintectureTest(FintectureCommon):
             '_fintecture_create_checkout_session',
             mock_fintecture_create_checkout_session,
         ), mute_logger('odoo.addons.payment.models.payment_transaction'):
-            processing_values = tx._get_processing_values()
+            processing_values = tx._get_fintecture_processing_values()
 
         self.assertEqual(processing_values['app_id'], self.fintecture.fintecture_app_id)
         self.assertEqual(processing_values['session_id'], dummy_session_id)

@@ -121,7 +121,7 @@ class AccountMove(models.Model):
 
             trx.with_context(
                 unique_key=unique_key
-            )._get_processing_values()
+            )._get_fintecture_processing_values()
 
             move.fintecture_payment_link = trx.fintecture_url
             move.fintecture_iban_holder = trx.fintecture_iban_holder

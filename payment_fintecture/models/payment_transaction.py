@@ -90,21 +90,8 @@ class PaymentTransaction(models.Model):
                 addresses.append(data['country'])
             trx.fintecture_iban_bank_address = ",".join(addresses)
 
-    def _get_specific_processing_values(self, processing_values):
-        """ Override of payment to return Fintecture-specific processing values.
-
-        Note: self.ensure_one() from `_get_processing_values`
-
-        :param dict processing_values: The generic processing values of the transaction
-        :return: The dict of acquirer-specific processing values
-        :rtype: dict
-        """
+    def _get_fintecture_processing_values(self, processing_values):
         _logger.info('|PaymentTransaction| Retrieving specific processing values...')
-
-        res = super()._get_specific_processing_values(processing_values)
-
-        if self.provider != PAYMENT_ACQUIRER_NAME or self.operation != 'online_redirect':
-            return res
 
         if self.fintecture_url and self.acquirer_reference:
             return {
@@ -229,7 +216,7 @@ class PaymentTransaction(models.Model):
 
     def _reconcile_after_done(self):
         return self._reconcile_after_transaction_done()
-        
+
     def _set_done(self):
         return self._set_transaction_done()
 
