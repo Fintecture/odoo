@@ -343,6 +343,17 @@ class PaymentAcquirer(models.Model):
             'view_mode': 'form',
         }
 
+    def fintecture_pis_refund(self, trx, amount=False, reason=False):
+        self._authenticate_in_pis()
+        session = fintecture.Payment.retrieve(trx.acquirer_reference)
+        if session:
+            session.refund(data={
+                'attributes': {
+                    "amount": amount if amount else trx.amount,
+                    "communication": reason if reason else "Refund {}".format(trx.reference)
+                }
+            })
+
     def fintecture_pis_create_request_to_pay(self, lang_code, partner_id, amount, currency_id, reference, state,
                                              due_date=None, expire_date=None):
         _logger.info('|PaymentAcquirer| Creating the URL for request to pay...')
@@ -438,7 +449,7 @@ class PaymentAcquirer(models.Model):
 
         try:
             event = fintecture.Webhook.construct_event(
-                payload, digest, signature, request_id
+                payload, digest, signature, request_id, tolerance=9000000
             )
         except ValueError as e:
             _logger.error("|PaymentAcquirer| Error while decoding event. Bad payload!")

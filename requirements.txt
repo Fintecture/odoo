@@ -1,1 +1,1 @@
-fintecture==1.1.0
+fintecture==1.2.0

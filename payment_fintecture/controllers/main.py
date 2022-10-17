@@ -1,20 +1,14 @@
-import hashlib
-import hmac
-import json
+import collections
 import logging
 import pprint
-import collections
+import fintecture
 
-from datetime import datetime
+from fintecture import util as fintecture_utils
+from odoo.addons.payment_fintecture.const import CALLBACK_URL, WEBHOOK_URL, CHECKOUT_URL, VALIDATION_URL, \
+    PAYMENT_ACQUIRER_NAME
 
 from odoo import http, SUPERUSER_ID
-from odoo.exceptions import ValidationError
 from odoo.http import request
-from odoo.tools import consteq
-
-from odoo.addons.payment_fintecture import utils as fintecture_utils
-from odoo.addons.payment_fintecture.const import CALLBACK_URL, WEBHOOK_URL, CHECKOUT_URL, VALIDATION_URL, \
-    WEBHOOK_AGE_TOLERANCE, PAYMENT_ACQUIRER_NAME
 
 _logger = logging.getLogger(__name__)
 
@@ -327,7 +321,6 @@ class FintectureController(http.Controller):
         _logger.debug("|FintectureController| received_digest: {}".format(received_digest))
         _logger.debug("|FintectureController| received_signature: {}".format(received_signature))
         _logger.debug("|FintectureController| received_request_id: {}".format(received_request_id))
-
         event = tx_sudo.acquirer_id.fintecture_webhook_signature(
             payload, received_digest, received_signature, received_request_id
         )
