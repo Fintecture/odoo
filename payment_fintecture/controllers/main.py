@@ -1,9 +1,8 @@
 import collections
-import collections
 import logging
 import pprint
-import werkzeug
 
+import werkzeug
 from odoo.addons.payment_fintecture.const import CALLBACK_URL, WEBHOOK_URL, CHECKOUT_URL, VALIDATION_URL, \
     PAYMENT_ACQUIRER_NAME
 
@@ -40,7 +39,7 @@ class FintectureController(http.Controller):
         self._include_payment_intent_in_feedback_data(payment_intent, data)
 
         # Handle the feedback data crafted with Fintecture API objects
-        request.env['payment.transaction'].sudo()._handle_feedback_data(PAYMENT_ACQUIRER_NAME, data)
+        request.env['payment.transaction'].sudo()._handle_fintecture_webhook(data)
 
         # Redirect the user to the status page
         return werkzeug.utils.redirect('/payment/status')
@@ -66,7 +65,7 @@ class FintectureController(http.Controller):
         self._include_setup_intent_in_feedback_data(checkout_session.get('setup_intent', {}), data)
 
         # Handle the feedback data crafted with Fintecture API objects
-        request.env['payment.transaction'].sudo()._handle_feedback_data(PAYMENT_ACQUIRER_NAME, data)
+        request.env['payment.transaction'].sudo()._handle_fintecture_webhook(data)
 
         # Redirect the user to the status page
         return werkzeug.utils.redirect('/payment/status')
@@ -240,7 +239,9 @@ class FintectureController(http.Controller):
             if event is not False:
                 if event['status'] in ['payment_created', 'payment_partial'] and event['transfer_state'] in [
                     'completed', 'received', 'insufficient']:
-                    request.env['payment.transaction'].sudo()._handle_feedback_data(PAYMENT_ACQUIRER_NAME, form_data)
+                    request.env['payment.transaction'].sudo()._handle_fintecture_webhook(
+                        form_data
+                    )
                 else:
                     _logger.info("|FintectureController| Received webhook of payment with session={0}) has the "
                                  " status='{1}' and transfer_state={2}".format(

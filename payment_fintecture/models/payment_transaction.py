@@ -135,8 +135,8 @@ class PaymentTransaction(models.Model):
         }
 
     @api.model
-    def _get_tx_from_feedback_data(self, provider, data):
-        """ Override of payment to find the transaction based on Fintecture data.
+    def _handle_fintecture_webhook(self, data):
+        """ Retrieve fintecture .
 
         :param str provider: The provider of the acquirer that handled the transaction
         :param dict data: The feedback data sent by the provider
@@ -146,12 +146,6 @@ class PaymentTransaction(models.Model):
         :raise: ValidationError if the data match no transaction
         """
         _logger.info('|PaymentTransaction| Retrieving transaction from feedback data...')
-        tx = super()._get_tx_from_feedback_data(provider, data)
-        _logger.debug('|PaymentTransaction| tx: %r' % tx)
-
-        if provider != PAYMENT_ACQUIRER_NAME:
-            return tx
-
         ir_logging_model = self.env['ir.logging']
         payment_transaction_model = self.env['payment.transaction'].sudo().with_user(SUPERUSER_ID)
 
@@ -181,9 +175,10 @@ class PaymentTransaction(models.Model):
             raise ValidationError(
                 "Fintecture: " + _("No transaction found matching reference '%s.'", session_id)
             )
+        found_trx._process_fintecture_feedback_data()
         return found_trx
 
-    def _process_feedback_data(self, data):
+    def _process_fintecture_feedback_data(self, data):
         """ Override of payment to process the transaction based on Adyen data.
 
         Note: self.ensure_one()
@@ -196,7 +191,6 @@ class PaymentTransaction(models.Model):
         :raise: ValidationError if inconsistent data were received
         """
         _logger.info('|PaymentTransaction| Processing transaction with received feedback data...')
-        super()._process_feedback_data(data)
         if self.provider != PAYMENT_ACQUIRER_NAME:
             return
         received_amount = data.get('received_amount', False)
