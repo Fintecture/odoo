@@ -614,7 +614,7 @@ class PaymentAcquirer(models.Model):
             )
             logging.info(data)
         temp_fintecture_tx_values = {
-            'fintecture_url': self.fintecture_url
+            'fintecture_url': trx.fintecture_url
         }
         fintecture_tx_values.update(temp_fintecture_tx_values)
         return fintecture_tx_values
