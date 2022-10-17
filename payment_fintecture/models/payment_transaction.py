@@ -101,13 +101,9 @@ class PaymentTransaction(models.Model):
             }
 
         try:
-            menu_id = self.env.ref('payment.payment_acquirer_menu').id  # TODO: fix
-            action_id = self.env.ref('payment.action_payment_acquirer').id  # TODO: fix
-            state = '{}/{}/{}/{}'.format(
-                self.company_id.id,
-                uuid.uuid4().hex,
-                menu_id,
-                action_id
+            state = '{}/{}'.format(
+                self.acquirer_id.company_id.id,
+                self.id
             )
             req_pay_data = self._fintecture_create_request_pay(state)
             req_pay_data = req_pay_data['meta']
