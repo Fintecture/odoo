@@ -606,7 +606,12 @@ class PaymentAcquirer(models.Model):
             return values
         fintecture_tx_values = dict(values)
         if not trx.fintecture_payment_intent or not trx.fintecture_url:
-            data = trx._fintecture_create_request_pay()
+            data = trx._fintecture_create_request_pay(
+                state="{}/{}".format(
+                    str(trx.company_id.id),
+                    str(trx.id)
+                )
+            )
             logging.info(data)
         temp_fintecture_tx_values = {
             'fintecture_url': self.fintecture_url
