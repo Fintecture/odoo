@@ -90,7 +90,7 @@ class PaymentTransaction(models.Model):
                 addresses.append(data['country'])
             trx.fintecture_iban_bank_address = ",".join(addresses)
 
-    def _get_fintecture_processing_values(self, processing_values):
+    def _get_fintecture_processing_values(self):
         _logger.info('|PaymentTransaction| Retrieving specific processing values...')
 
         if self.fintecture_url and self.acquirer_reference:
