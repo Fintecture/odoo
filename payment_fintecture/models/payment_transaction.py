@@ -194,15 +194,10 @@ class PaymentTransaction(models.Model):
             return
         received_amount = data.get('received_amount', False)
         # handle intent of transfer state and session status
-        if self.operation == 'online_redirect':
-            transfer_state = data.get('transfer_state', False)
-            session_status = data.get('status', False)
-            _logger.debug('|PaymentTransaction| transfer_state: {0}'.format(transfer_state))
-            _logger.debug('|PaymentTransaction| session_status: {0}'.format(session_status))
-        else:
-            raise ValidationError(
-                "Fintecture: " + _("Invalid transaction operation.")
-            )
+        transfer_state = data.get('transfer_state', False)
+        session_status = data.get('status', False)
+        _logger.debug('|PaymentTransaction| transfer_state: {0}'.format(transfer_state))
+        _logger.debug('|PaymentTransaction| session_status: {0}'.format(session_status))
 
         if not transfer_state or not session_status:
             raise ValidationError(
