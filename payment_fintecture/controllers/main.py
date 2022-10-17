@@ -286,7 +286,7 @@ class FintectureController(http.Controller):
         _logger.info('|FintectureController| Verifying webhook signature...')
 
         tx_sudo = request.env['payment.transaction'].sudo()._handle_fintecture_webhook(
-            PAYMENT_ACQUIRER_NAME, form_data
+            form_data
         )
 
         if not tx_sudo:
