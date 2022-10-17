@@ -1,7 +1,8 @@
-import logging
+import collections
 import collections
 import logging
 import pprint
+import werkzeug
 
 from odoo.addons.payment_fintecture.const import CALLBACK_URL, WEBHOOK_URL, CHECKOUT_URL, VALIDATION_URL, \
     PAYMENT_ACQUIRER_NAME
@@ -23,7 +24,7 @@ class FintectureController(http.Controller):
 
         fintecture_url = data.get('fintecture_url')
         if fintecture_url:
-            return request.redirect(fintecture_url)
+            return werkzeug.utils.redirect(fintecture_url)
 
         # Retrieve the tx and acquirer based on the tx reference included in the return url
         tx_sudo = request.env['payment.transaction'].sudo()._get_tx_from_feedback_data(
@@ -42,7 +43,7 @@ class FintectureController(http.Controller):
         request.env['payment.transaction'].sudo()._handle_feedback_data(PAYMENT_ACQUIRER_NAME, data)
 
         # Redirect the user to the status page
-        return request.redirect('/payment/status')
+        return werkzeug.utils.redirect('/payment/status')
 
     @http.route(VALIDATION_URL, type='http', auth='public', csrf=False)
     def fintecture_return_from_validation(self, **data):
@@ -68,7 +69,7 @@ class FintectureController(http.Controller):
         request.env['payment.transaction'].sudo()._handle_feedback_data(PAYMENT_ACQUIRER_NAME, data)
 
         # Redirect the user to the status page
-        return request.redirect('/payment/status')
+        return werkzeug.utils.redirect('/payment/status')
 
     @http.route(route=CALLBACK_URL, type='http', auth='public', methods=['GET'])
     def fintecture_callback(self, **kwargs):
@@ -158,7 +159,7 @@ class FintectureController(http.Controller):
 
             # do not notify about a payment status, created successfully or other??
 
-            return request.redirect(redirect_uri)
+            return werkzeug.utils.redirect(redirect_uri)
 
         elif rs['operation'] == 'invoice':
 
@@ -194,7 +195,7 @@ class FintectureController(http.Controller):
             landing_route = tx.landing_route
             _logger.debug('|FintectureController| fintecture_callback(): landing_route: {}'.format(landing_route))
 
-            return request.redirect(landing_route)
+            return werkzeug.utils.redirect(landing_route)
 
         elif status == 'payment_created' and session_id:
             values = {
@@ -210,7 +211,7 @@ class FintectureController(http.Controller):
                     .format(state, rs['operation'])
             )
 
-        return request.redirect('/web')
+        return werkzeug.utils.redirect('/web')
 
     @http.route(WEBHOOK_URL, methods=['POST'], type='http', auth='public', csrf=False)
     def fintecture_webhook(self, **kwargs):
