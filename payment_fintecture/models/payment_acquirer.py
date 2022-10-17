@@ -608,7 +608,7 @@ class PaymentAcquirer(models.Model):
         if not trx.fintecture_payment_intent or not trx.fintecture_url:
             data = trx._fintecture_create_request_pay(
                 state="{}/{}".format(
-                    str(trx.company_id.id),
+                    str(self.company_id.id),
                     str(trx.id)
                 )
             )
