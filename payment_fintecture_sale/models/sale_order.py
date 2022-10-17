@@ -66,8 +66,6 @@ class FintectureSale(models.Model):
             'amount': order.amount_total,
             'currency_id': order.currency_id.id,
             'partner_id': order.partner_id.id,
-            'token_id': False,
-            'operation': 'online_redirect',
             'landing_route': order.get_portal_url(),
             'sale_order_ids': [(4, order.id)]
         }

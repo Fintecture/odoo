@@ -67,8 +67,6 @@ class AccountMove(models.Model):
             'amount': move.amount_residual,
             'currency_id': move.currency_id.id,
             'partner_id': move.partner_id.id,
-            'token_id': False,
-            'operation': 'online_redirect',
             'landing_route': move.get_portal_url()
         }
 
