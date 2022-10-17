@@ -67,7 +67,6 @@ class AccountMove(models.Model):
             'amount': move.amount_residual,
             'currency_id': move.currency_id.id,
             'partner_id': move.partner_id.id,
-            'landing_route': move.get_portal_url()
         }
 
     def _compute_fintecture_payment_link(self):

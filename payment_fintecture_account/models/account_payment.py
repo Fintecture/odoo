@@ -36,7 +36,6 @@ class AccountPayment(models.Model):
             'currency_id': payment.currency_id.id,
             'partner_id': payment.partner_id.id,
             'operation': 'online_redirect',
-            'landing_route': CALLBACK_URL
         }
 
     def _compute_fintecture_payment_link(self):
