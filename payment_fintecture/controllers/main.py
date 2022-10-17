@@ -218,7 +218,7 @@ class FintectureController(http.Controller):
                     'completed', 'received', 'insufficient']:
                     request.env['payment.transaction'].sudo()._handle_fintecture_webhook(
                         form_data
-                    )._process_fintecture_feedback_data()
+                    )._process_fintecture_feedback_data(form_data)
                 else:
                     _logger.info("|FintectureController| Received webhook of payment with session={0}) has the "
                                  " status='{1}' and transfer_state={2}".format(
