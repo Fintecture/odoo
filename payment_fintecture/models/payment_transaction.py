@@ -211,8 +211,6 @@ class PaymentTransaction(models.Model):
             self._set_pending()
         elif transfer_state in INTENT_STATUS_MAPPING['done'] and session_status in INTENT_STATUS_MAPPING['done']:
             _logger.info('|PaymentTransaction| Setting current transaction (%r) as done...' % self)
-            if self.tokenize:
-                self._fintecture_tokenize_from_feedback_data(data)
             if received_amount:
                 self.write({
                     'amount': float(received_amount)
