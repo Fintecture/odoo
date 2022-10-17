@@ -175,7 +175,6 @@ class PaymentTransaction(models.Model):
             raise ValidationError(
                 "Fintecture: " + _("No transaction found matching reference '%s.'", session_id)
             )
-        found_trx._process_fintecture_feedback_data()
         return found_trx
 
     def _process_fintecture_feedback_data(self, data):
