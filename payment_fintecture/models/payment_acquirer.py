@@ -411,7 +411,7 @@ class PaymentAcquirer(models.Model):
             'attributes': {
                 'amount': str(amount),
                 'currency': str(currency_id.name).upper(),
-                'communication': "Reference {}".format(reference)
+                'communication': "Reference {}".format(reference.replace('|', ' - '))
             }
         }
 
