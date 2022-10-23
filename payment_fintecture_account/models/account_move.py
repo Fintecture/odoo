@@ -66,7 +66,10 @@ class AccountMove(models.Model):
             raise UserError("The selected customer or the company must to have a country selected.")
         return {
             'acquirer_id': acquirer.id,
-            'reference': move.name,
+            'reference': "{}|{}".format(
+                move.name,
+                move.company_id.id
+            ),
             'amount': move.amount_residual,
             'currency_id': move.currency_id.id,
             'partner_id': move.partner_id.id,
