@@ -32,7 +32,7 @@ class AccountPayment(models.Model):
         return {
             'acquirer_id': acquirer.id,
             'reference': payment.name,
-            'amount': payment.amount_company_currency_signed,
+            'amount': payment.amount,
             'currency_id': payment.currency_id.id,
             'partner_id': payment.partner_id.id,
             'operation': 'online_redirect',
