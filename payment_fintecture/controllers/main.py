@@ -1,53 +1,38 @@
-import hashlib
-import hmac
-import json
+import collections
 import logging
 import pprint
-import collections
 
-from datetime import datetime
+import werkzeug
+from odoo.addons.payment_fintecture.const import CALLBACK_URL, WEBHOOK_URL, CHECKOUT_URL, VALIDATION_URL, \
+    PAYMENT_ACQUIRER_NAME
 
 from odoo import http, SUPERUSER_ID
-from odoo.exceptions import ValidationError
 from odoo.http import request
-from odoo.tools import consteq
-
-from odoo.addons.payment_fintecture import utils as fintecture_utils
-from odoo.addons.payment_fintecture.const import CALLBACK_URL, WEBHOOK_URL, CHECKOUT_URL, VALIDATION_URL, \
-    WEBHOOK_AGE_TOLERANCE, PAYMENT_ACQUIRER_NAME
 
 _logger = logging.getLogger(__name__)
 
 
 class FintectureController(http.Controller):
 
-    # TODO: remove me!
     @http.route(CHECKOUT_URL, type='http', auth='public', csrf=False)
     def fintecture_return_from_checkout(self, **data):
         """ Process the data returned by Fintecture after redirection for checkout.
 
         :param dict data: The GET params appended to the URL in `_fintecture_create_checkout_session`
         """
+
+        fintecture_url = data.get('fintecture_url')
+        if fintecture_url:
+            return werkzeug.utils.redirect(fintecture_url)
+
         # Retrieve the tx and acquirer based on the tx reference included in the return url
-        tx_sudo = request.env['payment.transaction'].sudo()._get_tx_from_feedback_data(
+        tx_sudo = request.env['payment.transaction'].sudo()._handle_fintecture_webhook(
             PAYMENT_ACQUIRER_NAME, data
         )
-        acquirer_sudo = tx_sudo.acquirer_id
-
-        # Fetch the PaymentIntent, Charge and PaymentMethod objects from Fintecture
-        payment_intent = acquirer_sudo._fintecture_make_request(
-            f'payment_intents/{tx_sudo.fintecture_payment_intent}', method='GET'
-        )
-        _logger.info("received payment_intents response:\n%s", pprint.pformat(payment_intent))
-        self._include_payment_intent_in_feedback_data(payment_intent, data)
-
-        # Handle the feedback data crafted with Fintecture API objects
-        request.env['payment.transaction'].sudo()._handle_feedback_data(PAYMENT_ACQUIRER_NAME, data)
 
         # Redirect the user to the status page
-        return request.redirect('/payment/status')
+        return werkzeug.utils.redirect('/payment/status')
 
-    # TODO: remove me!
     @http.route(VALIDATION_URL, type='http', auth='public', csrf=False)
     def fintecture_return_from_validation(self, **data):
         """ Process the data returned by Fintecture after redirection for validation.
@@ -55,24 +40,12 @@ class FintectureController(http.Controller):
         :param dict data: The GET params appended to the URL in `_fintecture_create_checkout_session`
         """
         # Retrieve the acquirer based on the tx reference included in the return url
-        acquirer_sudo = request.env['payment.transaction'].sudo()._get_tx_from_feedback_data(
+        trx = request.env['payment.transaction'].sudo()._handle_fintecture_webhook(
             PAYMENT_ACQUIRER_NAME, data
-        ).acquirer_id
-
-        # Fetch the Session, SetupIntent and PaymentMethod objects from Fintecture
-        checkout_session = acquirer_sudo._fintecture_make_request(
-            f'checkout/sessions/{data.get("checkout_session_id")}',
-            payload={'expand[]': 'setup_intent.payment_method'},  # Expand all required objects
-            method='GET'
         )
-        _logger.info("received checkout/session response:\n%s", pprint.pformat(checkout_session))
-        self._include_setup_intent_in_feedback_data(checkout_session.get('setup_intent', {}), data)
-
-        # Handle the feedback data crafted with Fintecture API objects
-        request.env['payment.transaction'].sudo()._handle_feedback_data(PAYMENT_ACQUIRER_NAME, data)
 
         # Redirect the user to the status page
-        return request.redirect('/payment/status')
+        return werkzeug.utils.redirect('/payment/status')
 
     @http.route(route=CALLBACK_URL, type='http', auth='public', methods=['GET'])
     def fintecture_callback(self, **kwargs):
@@ -162,7 +135,7 @@ class FintectureController(http.Controller):
 
             # do not notify about a payment status, created successfully or other??
 
-            return request.redirect(redirect_uri)
+            return werkzeug.utils.redirect(redirect_uri)
 
         elif rs['operation'] == 'invoice':
 
@@ -198,7 +171,7 @@ class FintectureController(http.Controller):
             landing_route = tx.landing_route
             _logger.debug('|FintectureController| fintecture_callback(): landing_route: {}'.format(landing_route))
 
-            return request.redirect(landing_route)
+            return werkzeug.utils.redirect(landing_route)
 
         elif status == 'payment_created' and session_id:
             values = {
@@ -214,7 +187,7 @@ class FintectureController(http.Controller):
                     .format(state, rs['operation'])
             )
 
-        return request.redirect('/web')
+        return werkzeug.utils.redirect('/web')
 
     @http.route(WEBHOOK_URL, methods=['POST'], type='http', auth='public', csrf=False)
     def fintecture_webhook(self, **kwargs):
@@ -243,7 +216,9 @@ class FintectureController(http.Controller):
             if event is not False:
                 if event['status'] in ['payment_created', 'payment_partial'] and event['transfer_state'] in [
                     'completed', 'received', 'insufficient']:
-                    request.env['payment.transaction'].sudo()._handle_feedback_data(PAYMENT_ACQUIRER_NAME, form_data)
+                    request.env['payment.transaction'].sudo()._handle_fintecture_webhook(
+                        form_data
+                    )._process_fintecture_feedback_data(form_data)
                 else:
                     _logger.info("|FintectureController| Received webhook of payment with session={0}) has the "
                                  " status='{1}' and transfer_state={2}".format(
@@ -310,8 +285,8 @@ class FintectureController(http.Controller):
     def _verify_webhook_signature(form_data):
         _logger.info('|FintectureController| Verifying webhook signature...')
 
-        tx_sudo = request.env['payment.transaction'].sudo()._get_tx_from_feedback_data(
-            PAYMENT_ACQUIRER_NAME, form_data
+        tx_sudo = request.env['payment.transaction'].sudo()._handle_fintecture_webhook(
+            form_data
         )
 
         if not tx_sudo:

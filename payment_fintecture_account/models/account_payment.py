@@ -32,11 +32,9 @@ class AccountPayment(models.Model):
         return {
             'acquirer_id': acquirer.id,
             'reference': payment.name,
-            'amount': payment.amount_company_currency_signed,
+            'amount': payment.amount,
             'currency_id': payment.currency_id.id,
             'partner_id': payment.partner_id.id,
-            'operation': 'online_redirect',
-            'landing_route': CALLBACK_URL
         }
 
     def _compute_fintecture_payment_link(self):
@@ -68,6 +66,6 @@ class AccountPayment(models.Model):
                     trx.write(trx_data)
             else:
                 trx = trxs[-1]
-            trx._get_processing_values()
+            trx._get_fintecture_processing_values()
             pay.fintecture_payment_link = trx.fintecture_url
             pay.fintecture_payment_qr = trx.fintecture_create_qr()

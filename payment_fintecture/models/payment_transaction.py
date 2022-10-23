@@ -6,13 +6,11 @@ import base64
 import json
 
 from io import BytesIO
-from werkzeug import urls
 from datetime import date
 
 from odoo import SUPERUSER_ID, _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
-from odoo.addons.payment import utils as payment_utils
 from odoo.addons.payment_fintecture import utils as fintecture_utils
 from odoo.addons.payment_fintecture.const import INTENT_STATUS_MAPPING, PAYMENT_METHOD_TYPES, CHECKOUT_URL, \
     VALIDATION_URL, CALLBACK_URL, PAYMENT_ACQUIRER_NAME
@@ -92,21 +90,8 @@ class PaymentTransaction(models.Model):
                 addresses.append(data['country'])
             trx.fintecture_iban_bank_address = ",".join(addresses)
 
-    def _get_specific_processing_values(self, processing_values):
-        """ Override of payment to return Fintecture-specific processing values.
-
-        Note: self.ensure_one() from `_get_processing_values`
-
-        :param dict processing_values: The generic processing values of the transaction
-        :return: The dict of acquirer-specific processing values
-        :rtype: dict
-        """
+    def _get_fintecture_processing_values(self):
         _logger.info('|PaymentTransaction| Retrieving specific processing values...')
-
-        res = super()._get_specific_processing_values(processing_values)
-
-        if self.provider != PAYMENT_ACQUIRER_NAME or self.operation != 'online_redirect':
-            return res
 
         if self.fintecture_url and self.acquirer_reference:
             return {
@@ -116,13 +101,9 @@ class PaymentTransaction(models.Model):
             }
 
         try:
-            menu_id = self.env.ref('payment.payment_acquirer_menu').id  # TODO: fix
-            action_id = self.env.ref('payment.action_payment_acquirer').id  # TODO: fix
-            state = '{}/{}/{}/{}'.format(
-                self.company_id.id,
-                uuid.uuid4().hex,
-                menu_id,
-                action_id
+            state = '{}/{}'.format(
+                self.acquirer_id.company_id.id,
+                self.id
             )
             req_pay_data = self._fintecture_create_request_pay(state)
             req_pay_data = req_pay_data['meta']
@@ -137,8 +118,8 @@ class PaymentTransaction(models.Model):
         }
 
     @api.model
-    def _get_tx_from_feedback_data(self, provider, data):
-        """ Override of payment to find the transaction based on Fintecture data.
+    def _handle_fintecture_webhook(self, data):
+        """ Retrieve fintecture .
 
         :param str provider: The provider of the acquirer that handled the transaction
         :param dict data: The feedback data sent by the provider
@@ -148,12 +129,6 @@ class PaymentTransaction(models.Model):
         :raise: ValidationError if the data match no transaction
         """
         _logger.info('|PaymentTransaction| Retrieving transaction from feedback data...')
-        tx = super()._get_tx_from_feedback_data(provider, data)
-        _logger.debug('|PaymentTransaction| tx: %r' % tx)
-
-        if provider != PAYMENT_ACQUIRER_NAME:
-            return tx
-
         ir_logging_model = self.env['ir.logging']
         payment_transaction_model = self.env['payment.transaction'].sudo().with_user(SUPERUSER_ID)
 
@@ -185,7 +160,7 @@ class PaymentTransaction(models.Model):
             )
         return found_trx
 
-    def _process_feedback_data(self, data):
+    def _process_fintecture_feedback_data(self, data):
         """ Override of payment to process the transaction based on Adyen data.
 
         Note: self.ensure_one()
@@ -198,20 +173,14 @@ class PaymentTransaction(models.Model):
         :raise: ValidationError if inconsistent data were received
         """
         _logger.info('|PaymentTransaction| Processing transaction with received feedback data...')
-        super()._process_feedback_data(data)
         if self.provider != PAYMENT_ACQUIRER_NAME:
             return
         received_amount = data.get('received_amount', False)
         # handle intent of transfer state and session status
-        if self.operation == 'online_redirect':
-            transfer_state = data.get('transfer_state', False)
-            session_status = data.get('status', False)
-            _logger.debug('|PaymentTransaction| transfer_state: {0}'.format(transfer_state))
-            _logger.debug('|PaymentTransaction| session_status: {0}'.format(session_status))
-        else:
-            raise ValidationError(
-                "Fintecture: " + _("Invalid transaction operation.")
-            )
+        transfer_state = data.get('transfer_state', False)
+        session_status = data.get('status', False)
+        _logger.debug('|PaymentTransaction| transfer_state: {0}'.format(transfer_state))
+        _logger.debug('|PaymentTransaction| session_status: {0}'.format(session_status))
 
         if not transfer_state or not session_status:
             raise ValidationError(
@@ -225,8 +194,6 @@ class PaymentTransaction(models.Model):
             self._set_pending()
         elif transfer_state in INTENT_STATUS_MAPPING['done'] and session_status in INTENT_STATUS_MAPPING['done']:
             _logger.info('|PaymentTransaction| Setting current transaction (%r) as done...' % self)
-            if self.tokenize:
-                self._fintecture_tokenize_from_feedback_data(data)
             if received_amount:
                 self.write({
                     'amount': float(received_amount)
@@ -242,6 +209,12 @@ class PaymentTransaction(models.Model):
             self._set_error(
                 "Fintecture: " + _("Received data with invalid intent state or status: %s", transfer_state)
             )
+
+    def _reconcile_after_done(self):
+        return self._reconcile_after_transaction_done()
+
+    def _set_done(self):
+        return self._set_transaction_done()
 
     def _fintecture_create_request_pay(self, state=None):
         _logger.info('|PaymentTransaction| Creating the URL for request to pay...')
@@ -275,7 +248,7 @@ class PaymentTransaction(models.Model):
         pay_data = self.acquirer_id.fintecture_pis_create_request_to_pay(
             lang_code=lang,
             partner_id=self.partner_id,
-            amount=payment_utils.to_minor_currency_units(self.amount, self.currency_id) / 100,
+            amount=fintecture_utils.to_minor_currency_units(self.amount, self.currency_id) / 100,
             currency_id=self.currency_id,
             reference=self.reference,
             state=state,

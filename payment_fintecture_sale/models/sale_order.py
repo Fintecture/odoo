@@ -1,6 +1,7 @@
 from odoo.addons.payment_fintecture.const import PAYMENT_ACQUIRER_NAME
 
 from odoo import fields, models
+from odoo.exceptions import UserError
 
 
 class FintectureSale(models.Model):
@@ -60,15 +61,19 @@ class FintectureSale(models.Model):
         self.ensure_one()
         acquirer = self.env['payment.acquirer'].get_fintecture_acquirer()
         order = self.sudo()
+        country_id = order.partner_id.country_id.id if order.partner_id.country_id else self.env.company.country_id.id
+        if not country_id:
+            raise UserError("The selected customer or the company must to have a country selected.")
         return {
             'acquirer_id': acquirer.id,
-            'reference': order.name,
+            'reference': "{}|{}".format(
+                order.name,
+                order.company_id.id
+            ),
             'amount': order.amount_total,
             'currency_id': order.currency_id.id,
             'partner_id': order.partner_id.id,
-            'token_id': False,
-            'operation': 'online_redirect',
-            'landing_route': order.get_portal_url(),
+            'partner_country_id': country_id,
             'sale_order_ids': [(4, order.id)]
         }
 
@@ -107,7 +112,8 @@ class FintectureSale(models.Model):
             )
             if len(trxs) <= 0:
                 trx = PaymentTrxObj.sudo().search([
-                    ('reference', '=', order.name)
+                    ('reference', '=', order.name),
+                    ('acquirer_id.company_id', '=', order.company_id.id)
                 ], limit=1)
                 if not trx:
                     trx = PaymentTrxObj.create(trx_data)
@@ -125,7 +131,7 @@ class FintectureSale(models.Model):
 
             trx.with_context(
                 unique_key=unique_key
-            )._get_processing_values()
+            )._get_fintecture_processing_values()
 
             order.fintecture_payment_link = trx.fintecture_url
             order.fintecture_iban_holder = trx.fintecture_iban_holder

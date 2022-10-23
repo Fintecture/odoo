@@ -24,12 +24,8 @@
                 </li>
             </ul>
         </field>
+        <field name="view_template_id" ref="fintecture_form"/>
         <field name="display_as">Pay by Secured Transfer</field>
-        <field name="support_authorization">False</field>
-        <field name="support_fees_computation">False</field>
-        <field name="support_refund"></field>
-        <field name="support_tokenization">False</field>
-        <field name="allow_tokenization">False</field>
     </record>
 
     <record id="payment_method_fintecture" model="account.payment.method">

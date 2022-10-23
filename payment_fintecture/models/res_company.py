@@ -14,8 +14,6 @@ class FintectureCompany(models.Model):
         return company
 
     def fintecture_create_acquirer(self):
-        rule = self.env.ref('payment.payment_acquirer_company_rule')
-        rule.write({'active': False})
         acquirer = self.env.ref('payment_fintecture.payment_acquirer_fintecture')
         if not acquirer:
             return False
@@ -28,4 +26,3 @@ class FintectureCompany(models.Model):
                 acquirer.sudo().copy({
                     'company_id': company.id
                 })
-        rule.write({'active': True})

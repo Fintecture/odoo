@@ -13,6 +13,7 @@
     ],
     'data': [
         'views/payment_views.xml',
+        'views/payment_fintecture_templates.xml',
         'data/payment_acquirer_data.xml',
     ],
     'application': True,

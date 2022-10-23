@@ -1,7 +1,7 @@
 from odoo.addons.payment_fintecture.const import PAYMENT_ACQUIRER_NAME
 
 from odoo import fields, models
-
+from odoo.exceptions import UserError
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
@@ -61,15 +61,19 @@ class AccountMove(models.Model):
         self.ensure_one()
         acquirer = self.env['payment.acquirer'].get_fintecture_acquirer()
         move = self.sudo()
+        country_id = move.partner_id.country_id.id if move.partner_id.country_id else self.env.company.country_id.id
+        if not country_id:
+            raise UserError("The selected customer or the company must to have a country selected.")
         return {
             'acquirer_id': acquirer.id,
-            'reference': move.name,
+            'reference': "{}|{}".format(
+                move.name,
+                move.company_id.id
+            ),
             'amount': move.amount_residual,
             'currency_id': move.currency_id.id,
             'partner_id': move.partner_id.id,
-            'token_id': False,
-            'operation': 'online_redirect',
-            'landing_route': move.get_portal_url()
+            'partner_country_id': country_id,
         }
 
     def _compute_fintecture_payment_link(self):
@@ -103,7 +107,8 @@ class AccountMove(models.Model):
             )
             if len(trxs) <= 0:
                 trx = PaymentTrxObj.sudo().search([
-                    ('reference', '=', move.name)
+                    ('reference', '=', move.name),
+                    ('acquirer_id.company_id', '=', move.company_id.id)
                 ], limit=1)
                 if not trx:
                     trx = PaymentTrxObj.create(trx_data)
@@ -124,7 +129,7 @@ class AccountMove(models.Model):
 
             trx.with_context(
                 unique_key=unique_key
-            )._get_processing_values()
+            )._get_fintecture_processing_values()
 
             move.fintecture_payment_link = trx.fintecture_url
             move.fintecture_iban_holder = trx.fintecture_iban_holder

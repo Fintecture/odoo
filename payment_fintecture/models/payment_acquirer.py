@@ -12,7 +12,7 @@ from odoo.exceptions import ValidationError, UserError
 
 from odoo.addons.payment_fintecture import utils as fintecture_utils
 from odoo.addons.payment_fintecture.const import API_VERSION, PROXY_URL, WEBHOOK_HANDLED_EVENTS, CALLBACK_URL, \
-    WEBHOOK_URL, PAYMENT_ACQUIRER_NAME
+    WEBHOOK_URL, PAYMENT_ACQUIRER_NAME, CHECKOUT_URL
 
 _logger = logging.getLogger(__name__)
 
@@ -148,6 +148,17 @@ class PaymentAcquirer(models.Model):
             'show_done_msg': False,
             'show_cancel_msg': False,
         })
+
+    def _get_feature_support(self):
+        """Get advanced feature support by provider.
+
+        Each provider should add its technical in the corresponding
+        key for the following features:
+            * tokenize: support saving payment data in a payment.tokenize
+                        object
+        """
+        res = super(PaymentAcquirer, self)._get_feature_support()
+        return res
 
     # === CONSTRAINT METHODS ===#
 
@@ -387,23 +398,20 @@ class PaymentAcquirer(models.Model):
             meta['cc'] = partner_id.email
         if partner_id.mobile:
             meta['psu_phone'] = partner_id.mobile
-        if partner_id.country_id:
+        if partner_id.country_id and partner_id.street and partner_id.zip and partner_id.city:
             meta['psu_address'] = {
-                'country': partner_id.country_id.code
+                'country': partner_id.country_id.code,
+                'street': partner_id.street,
+                'zip': partner_id.zip,
+                'city': partner_id.city,
             }
-            if partner_id.street:
-                meta['psu_address']['street'] = partner_id.street
-            if partner_id.zip:
-                meta['psu_address']['zip'] = partner_id.zip
-            if partner_id.city:
-                meta['psu_address']['city'] = partner_id.city
 
         data = {
             'type': 'connect',
             'attributes': {
                 'amount': str(amount),
                 'currency': str(currency_id.name).upper(),
-                'communication': "Reference {}".format(reference)
+                'communication': "Reference {}".format(reference.replace('|', ' - '))
             }
         }
 
@@ -584,3 +592,29 @@ class PaymentAcquirer(models.Model):
             _logger.error('|PaymentAcquirer| An error occur when trying to authenticate through oAuth...')
             _logger.error('|PaymentAcquirer| ERROR {0}'.format(str(e)))
             raise UserError(_('Invalid authentication. Check your credential in payment acquirer configuration page.'))
+
+    def fintecture_form_generate_values(self, values):
+        self.ensure_one()
+        trx = self.env['payment.transaction'].sudo().search([
+            ('reference', '=', values.get('reference')),
+            ('acquirer_id', '=', self.id),
+        ], limit=1)
+        if not trx:
+            return values
+        fintecture_tx_values = dict(values)
+        if not trx.fintecture_payment_intent or not trx.fintecture_url:
+            data = trx._fintecture_create_request_pay(
+                state="{}/{}".format(
+                    str(self.company_id.id),
+                    str(trx.id)
+                )
+            )
+            logging.info(data)
+        temp_fintecture_tx_values = {
+            'fintecture_url': trx.fintecture_url
+        }
+        fintecture_tx_values.update(temp_fintecture_tx_values)
+        return fintecture_tx_values
+
+    def fintecture_get_form_action_url(self):
+        return CHECKOUT_URL
