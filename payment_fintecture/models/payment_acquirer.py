@@ -398,15 +398,13 @@ class PaymentAcquirer(models.Model):
             meta['cc'] = partner_id.email
         if partner_id.mobile:
             meta['psu_phone'] = partner_id.mobile
-        if partner_id.country_id:
+        if partner_id.country_id and partner_id.street and partner_id.zip and partner_id.city:
             meta['psu_address'] = {
                 'country': partner_id.country_id.code,
-                'street': partner_id.street if partner_id.street else ""
+                'street': partner_id.street,
+                'zip': partner_id.zip,
+                'city': partner_id.city,
             }
-            if partner_id.zip:
-                meta['psu_address']['zip'] = partner_id.zip
-            if partner_id.city:
-                meta['psu_address']['city'] = partner_id.city
 
         data = {
             'type': 'connect',
