@@ -60,12 +60,16 @@ class FintectureSale(models.Model):
         self.ensure_one()
         acquirer = self.env['payment.acquirer'].get_fintecture_acquirer()
         order = self.sudo()
+        country_id = order.partner_id.country_id.id if order.partner_id.country_id else self.env.company.country_id.id
+        if not country_id:
+            raise UserWarning("The selected customer or the company must to have a country selected.")
         return {
             'acquirer_id': acquirer.id,
             'reference': order.name,
             'amount': order.amount_total,
             'currency_id': order.currency_id.id,
             'partner_id': order.partner_id.id,
+            'partner_country_id': country_id,
             'sale_order_ids': [(4, order.id)]
         }
 
@@ -104,7 +108,8 @@ class FintectureSale(models.Model):
             )
             if len(trxs) <= 0:
                 trx = PaymentTrxObj.sudo().search([
-                    ('reference', '=', order.name)
+                    ('reference', '=', order.name),
+                    ('acquirer_id.company_id', '=', order.company_id.id)
                 ], limit=1)
                 if not trx:
                     trx = PaymentTrxObj.create(trx_data)

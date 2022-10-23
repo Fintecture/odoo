@@ -61,12 +61,16 @@ class AccountMove(models.Model):
         self.ensure_one()
         acquirer = self.env['payment.acquirer'].get_fintecture_acquirer()
         move = self.sudo()
+        country_id = move.partner_id.country_id.id if move.partner_id.country_id else self.env.company.country_id.id
+        if not country_id:
+            raise UserWarning("The selected customer or the company must to have a country selected.")
         return {
             'acquirer_id': acquirer.id,
             'reference': move.name,
             'amount': move.amount_residual,
             'currency_id': move.currency_id.id,
             'partner_id': move.partner_id.id,
+            'partner_country_id': country_id,
         }
 
     def _compute_fintecture_payment_link(self):
@@ -100,7 +104,8 @@ class AccountMove(models.Model):
             )
             if len(trxs) <= 0:
                 trx = PaymentTrxObj.sudo().search([
-                    ('reference', '=', move.name)
+                    ('reference', '=', move.name),
+                    ('acquirer_id.company_id', '=', move.company_id.id)
                 ], limit=1)
                 if not trx:
                     trx = PaymentTrxObj.create(trx_data)
