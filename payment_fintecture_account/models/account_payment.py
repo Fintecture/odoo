@@ -35,7 +35,6 @@ class AccountPayment(models.Model):
             'amount': payment.amount,
             'currency_id': payment.currency_id.id,
             'partner_id': payment.partner_id.id,
-            'operation': 'online_redirect',
         }
 
     def _compute_fintecture_payment_link(self):
