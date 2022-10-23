@@ -1,7 +1,7 @@
 from odoo.addons.payment_fintecture.const import PAYMENT_ACQUIRER_NAME
 
 from odoo import fields, models
-
+from odoo.exceptions import UserError
 
 class FintectureSale(models.Model):
     _inherit = "sale.order"
@@ -62,7 +62,7 @@ class FintectureSale(models.Model):
         order = self.sudo()
         country_id = order.partner_id.country_id.id if order.partner_id.country_id else self.env.company.country_id.id
         if not country_id:
-            raise UserWarning("The selected customer or the company must to have a country selected.")
+            raise UserError("The selected customer or the company must to have a country selected.")
         return {
             'acquirer_id': acquirer.id,
             'reference': order.name,

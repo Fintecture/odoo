@@ -1,7 +1,7 @@
 from odoo.addons.payment_fintecture.const import PAYMENT_ACQUIRER_NAME
 
 from odoo import fields, models
-
+from odoo.exceptions import UserError
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
@@ -63,7 +63,7 @@ class AccountMove(models.Model):
         move = self.sudo()
         country_id = move.partner_id.country_id.id if move.partner_id.country_id else self.env.company.country_id.id
         if not country_id:
-            raise UserWarning("The selected customer or the company must to have a country selected.")
+            raise UserError("The selected customer or the company must to have a country selected.")
         return {
             'acquirer_id': acquirer.id,
             'reference': move.name,
