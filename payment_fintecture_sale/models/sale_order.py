@@ -93,7 +93,7 @@ class FintectureSale(models.Model):
         PaymentTrxObj = self.env['payment.transaction'].sudo()
         acquirer = self.env['payment.acquirer'].get_fintecture_acquirer()
         for order in self:
-            if acquirer.state == 'disabled':
+            if acquirer.state == 'disabled' or order.state in ['done', 'sale']:
                 order.fintecture_payment_link = False
                 order.fintecture_iban_holder = False
                 order.fintecture_iban_account = False
