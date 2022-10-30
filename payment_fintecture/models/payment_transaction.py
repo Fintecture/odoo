@@ -175,7 +175,7 @@ class PaymentTransaction(models.Model):
         _logger.info('|PaymentTransaction| Processing transaction with received feedback data...')
         if self.provider != PAYMENT_ACQUIRER_NAME:
             return
-        received_amount = data.get('received_amount', False)
+        received_amount = float(data.get('received_amount', False))
         # handle intent of transfer state and session status
         transfer_state = data.get('transfer_state', False)
         session_status = data.get('status', False)
@@ -194,12 +194,51 @@ class PaymentTransaction(models.Model):
             self._set_pending()
         elif transfer_state in INTENT_STATUS_MAPPING['done'] and session_status in INTENT_STATUS_MAPPING['done']:
             _logger.info('|PaymentTransaction| Setting current transaction (%r) as done...' % self)
-            if received_amount:
+            if received_amount and (received_amount > self.amount):
+                _logger.info('|PaymentTransaction| Overpaid transaction (%r)...' % self)
+                trxs = self.search([
+                    '|',
+                    ('state', '=', 'done'),
+                    ('id', '=', self.id),
+                    ('acquirer_id', '=', self.acquirer_id.id),
+                    ('acquirer_reference', '=', self.acquirer_reference),
+                ])
+                _logger.info('|PaymentTransaction| Overpaid transaction belongs to an invoice (%r)...' % self)
+                total_paid = 0
+                for inv_trx in trxs:
+                    total_paid += inv_trx.amount
+                residual = received_amount - total_paid
+                _logger.info(
+                    "|PaymentTransaction| Overpaid transaction with total_paid {} and residual {}...".format(
+                        str(total_paid), str(residual)
+                    ))
+                self._reconcile_after_done()
+                self._set_done()
+                if residual > 0:
+                    new_trx = self.copy({
+                        'amount': residual,
+                        'invoice_ids': [(6, 0, self.invoice_ids.ids)],
+                        'payment_id': False,
+                        'state': 'pending',
+                        'reference': "{}|{}".format(self.reference, str(len(trxs.ids))),
+                    })
+                    new_trx._reconcile_after_done()
+                    new_trx._set_done()
+
+            elif received_amount and received_amount < self.amount:
+                _logger.info(
+                    "|PaymentTransaction| Partial paid transaction with received_amount {} and residual {}...".format(
+                        str(received_amount), str(self.amount - received_amount)
+                    ))
                 self.write({
-                    'amount': float(received_amount)
+                    'amount': received_amount
                 })
-            self._reconcile_after_done()
-            self._set_done()
+                self._reconcile_after_done()
+                self._set_done()
+            else:
+                self._reconcile_after_done()
+                self._set_done()
+
         elif transfer_state in INTENT_STATUS_MAPPING['cancel'] or session_status in INTENT_STATUS_MAPPING['cancel']:
             _logger.info('|PaymentTransaction| Canceling current transaction (%r)...' % self)
             self._set_canceled()
