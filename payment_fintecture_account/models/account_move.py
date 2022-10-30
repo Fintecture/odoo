@@ -3,6 +3,7 @@ from odoo.addons.payment_fintecture.const import PAYMENT_ACQUIRER_NAME
 from odoo import fields, models
 from odoo.exceptions import UserError
 
+
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
@@ -88,7 +89,7 @@ class AccountMove(models.Model):
         PaymentTrxObj = self.env['payment.transaction'].sudo()
         acquirer = self.env['payment.acquirer'].get_fintecture_acquirer()
         for move in self:
-            if acquirer.state == 'disabled':
+            if acquirer.state == 'disabled' or move.payment_state in ['paid', 'reversed']:
                 move.fintecture_payment_link = False
                 move.fintecture_iban_holder = False
                 move.fintecture_iban_account = False
