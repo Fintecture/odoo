@@ -383,15 +383,16 @@ class PaymentAcquirer(models.Model):
             unique_key = "customer.{}".format(str(partner_id.id))
         meta = {
             'psu_name': partner_id.name,
-            'psu_email': "{}.{}@odoo.fintecture.com".format(
-                unique_key,
-                str(self.fintecture_pis_app_id)
-            ),
+            'psu_email': partner_id.email,
             'due_date': due_date,
             'expire': expire_date,
             "reconciliation": {
-                "level": "payer",
-                "match_amount": True
+                "level": "key",
+                "match_amount": True,
+                'key': "{}.{}@odoo.fintecture.com".format(
+                    unique_key,
+                    str(self.fintecture_pis_app_id)
+                ),
             }
         }
         if partner_id.email:
@@ -407,7 +408,7 @@ class PaymentAcquirer(models.Model):
             }
 
         data = {
-            'type': 'connect',
+            'type': 'request-to-pay',
             'attributes': {
                 'amount': str(amount),
                 'currency': str(currency_id.name).upper(),
@@ -424,7 +425,7 @@ class PaymentAcquirer(models.Model):
         pay_response = fintecture.PIS.connect(
             redirect_uri=redirect_url,
             state=state,
-            with_virtualbeneficiary=True,
+            with_virtualbeneficiary=self.fintecture_invoice_viban,
             meta=meta,
             data=data,
             language=lang_code,
