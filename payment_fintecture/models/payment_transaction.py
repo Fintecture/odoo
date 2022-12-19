@@ -283,17 +283,21 @@ class PaymentTransaction(models.Model):
                 lang = str(self.partner_lang).split('_')[0]
             except:
                 lang = ''
-
-        pay_data = self.acquirer_id.fintecture_pis_create_request_to_pay(
-            lang_code=lang,
-            partner_id=self.partner_id,
-            amount=fintecture_utils.to_minor_currency_units(self.amount, self.currency_id) / 100,
-            currency_id=self.currency_id,
-            reference=self.reference,
-            state=state,
-            due_date=invoice_due_date,
-            expire_date=invoice_expire_date,
-        )
+        try:
+            pay_data = self.acquirer_id.fintecture_pis_create_request_to_pay(
+                lang_code=lang,
+                partner_id=self.partner_id,
+                amount=fintecture_utils.to_minor_currency_units(self.amount, self.currency_id) / 100,
+                currency_id=self.currency_id,
+                reference=self.reference,
+                state=state,
+                due_date=invoice_due_date,
+                expire_date=invoice_expire_date,
+            )
+        except Exception as e:
+            if 'Invalid account_id' in str(e):
+                raise UserError(_("A Fintecture account (wallet) is mandatory for this configuration."))
+            raise e
 
         self.acquirer_reference = pay_data['meta']['session_id']
         self.fintecture_payment_intent = pay_data['meta']['session_id']
