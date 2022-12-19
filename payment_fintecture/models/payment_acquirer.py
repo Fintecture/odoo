@@ -395,8 +395,6 @@ class PaymentAcquirer(models.Model):
                 ),
             }
         }
-        if partner_id.email:
-            meta['cc'] = partner_id.email
         if partner_id.mobile:
             meta['psu_phone'] = partner_id.mobile
         if partner_id.country_id and partner_id.street and partner_id.zip and partner_id.city:
