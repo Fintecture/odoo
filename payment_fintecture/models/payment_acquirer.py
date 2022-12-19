@@ -420,15 +420,23 @@ class PaymentAcquirer(models.Model):
         _logger.debug('|PaymentAcquirer| used meta: {0}'.format(meta))
         _logger.debug('|PaymentAcquirer| used data: {0}'.format(data))
         _logger.debug('|PaymentAcquirer| virtual beneficiary: {0}'.format(data))
-
-        pay_response = fintecture.PIS.connect(
-            redirect_uri=redirect_url,
-            state=state,
-            with_virtualbeneficiary=self.fintecture_invoice_viban,
-            meta=meta,
-            data=data,
-            language=lang_code,
-        )
+        if self.fintecture_invoice_viban:
+            pay_response = fintecture.PIS.connect(
+                redirect_uri=redirect_url,
+                state=state,
+                with_virtualbeneficiary=self.fintecture_invoice_viban,
+                meta=meta,
+                data=data,
+                language=lang_code,
+            )
+        else:
+            pay_response = fintecture.PIS.connect(
+                redirect_uri=redirect_url,
+                state=state,
+                meta=meta,
+                data=data,
+                language=lang_code,
+            )
         _logger.debug('|PaymentAcquirer| received request to pay result: {0}'.format(pay_response))
 
         return pay_response
