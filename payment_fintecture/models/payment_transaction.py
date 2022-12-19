@@ -297,8 +297,8 @@ class PaymentTransaction(models.Model):
             )
         except Exception as e:
             if 'Invalid account_id' in str(e):
-                raise UserError(_("A Fintecture account (wallet) is mandatory for this configuration."))
-            raise Exception(str(e))
+                raise ValidationError(_("A Fintecture account (wallet) is mandatory for this configuration."))
+            raise e
 
         self.acquirer_reference = pay_data['meta']['session_id']
         self.fintecture_payment_intent = pay_data['meta']['session_id']
