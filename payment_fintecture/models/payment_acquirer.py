@@ -431,6 +431,7 @@ class PaymentAcquirer(models.Model):
             )
         else:
             pay_response = fintecture.PIS.connect(
+                with_virtualbeneficiary=False,
                 redirect_uri=redirect_url,
                 state=state,
                 meta=meta,
