@@ -138,6 +138,10 @@
             </xpath>
             <xpath expr="//group[@name='payment_followup']" position="after">
                 <group attrs="{'invisible': [('provider', '!=', 'fintecture')]}" string="Fintecture Configuration">
+                    <div class="alert alert-info" role="alert" style="margin-bottom:0px;"
+                         attrs="{'invisible': [('fintecture_invoice_viban', '=', False), ('fintecture_sale_viban', '=', False)]}">
+                        <div>A Fintecture account (wallet) is mandatory for this configuration.</div>
+                    </div>
                     <field name="fintecture_sale_viban"/>
                     <field name="fintecture_sale_link_qr"/>
                     <field name="fintecture_invoice_viban"/>

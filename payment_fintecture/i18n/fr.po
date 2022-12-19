@@ -92,6 +92,11 @@ msgid "Fintecture Configuration"
 msgstr "Configuration de Fintecture"
 
 #. module: payment_fintecture
+#: model_terms:ir.ui.view,arch_db:payment_fintecture.payment_acquirer_form
+msgid "A Fintecture account (wallet) is mandatory for this configuration."
+msgstr "Un compte Fintecture (wallet) est obligatoire pour cette configuration."
+
+#. module: payment_fintecture
 #: model:ir.model.fields,field_description:payment_fintecture.field_payment_transaction__fintecture_iban_swift_bic
 msgid "Fintecture IBAN SWIFT/BIC"
 msgstr "Fintecture IBAN SWIFT/BIC"
