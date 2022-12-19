@@ -44,7 +44,7 @@
                         </div>
                     </div>
                 </div>
-                <div t-if="o.fintecture_invoice_link_qr or o.fintecture_invoice_viban">
+                <div t-if="o.fintecture_invoice_viban">
                     <div name="fintecture_viban_alert" style="padding:1em;background:#f8e7d3;border-radius:8px;">
                         <span class="my-0">
                             <svg width="18" height="17" viewBox="0 0 18 20" fill="none"

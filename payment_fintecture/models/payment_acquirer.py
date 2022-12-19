@@ -383,19 +383,10 @@ class PaymentAcquirer(models.Model):
             unique_key = "customer.{}".format(str(partner_id.id))
         meta = {
             'psu_name': partner_id.name,
-            'psu_email': "{}.{}@odoo.fintecture.com".format(
-                unique_key,
-                str(self.fintecture_pis_app_id)
-            ),
-            'due_date': due_date,
-            'expire': expire_date,
-            "reconciliation": {
-                "level": "payer",
-                "match_amount": True
-            }
+            'psu_email': partner_id.email,
+            'due_date': due_date if due_date > 0 else 86400,
+            'expire': expire_date if expire_date > 0 else 86400 + 7200,
         }
-        if partner_id.email:
-            meta['cc'] = partner_id.email
         if partner_id.mobile:
             meta['psu_phone'] = partner_id.mobile
         if partner_id.country_id:
@@ -410,11 +401,11 @@ class PaymentAcquirer(models.Model):
                 meta['psu_address']['city'] = partner_id.city
 
         data = {
-            'type': 'connect',
+            'type': 'request-to-pay',
             'attributes': {
                 'amount': str(amount),
                 'currency': str(currency_id.name).upper(),
-                'communication': "Reference {}".format(reference)
+                'communication': "Reference {}".format(reference.replace('|', ' - '))
             }
         }
 
@@ -424,14 +415,31 @@ class PaymentAcquirer(models.Model):
         _logger.debug('|PaymentAcquirer| used meta: {0}'.format(meta))
         _logger.debug('|PaymentAcquirer| used data: {0}'.format(data))
 
-        pay_response = fintecture.PIS.connect(
-            redirect_uri=redirect_url,
-            state=state,
-            with_virtualbeneficiary=True,
-            meta=meta,
-            data=data,
-            language=lang_code,
-        )
+        if self.fintecture_invoice_viban:
+            meta['reconciliation'] = {
+                "level": "key",
+                "match_amount": True,
+                'key': "{}.{}@odoo.fintecture.com".format(
+                    unique_key,
+                    str(self.fintecture_pis_app_id)
+                ),
+            }
+            pay_response = fintecture.PIS.request_to_pay(
+                redirect_uri=redirect_url,
+                state=state,
+                with_virtualbeneficiary=True,
+                meta=meta,
+                data=data,
+                language=lang_code,
+            )
+        else:
+            pay_response = fintecture.PIS.request_to_pay(
+                redirect_uri=redirect_url,
+                state=state,
+                meta=meta,
+                data=data,
+                language=lang_code,
+            )
         _logger.debug('|PaymentAcquirer| received request to pay result: {0}'.format(pay_response))
 
         return pay_response
