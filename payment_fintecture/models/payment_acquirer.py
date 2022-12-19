@@ -384,8 +384,8 @@ class PaymentAcquirer(models.Model):
         meta = {
             'psu_name': partner_id.name,
             'psu_email': partner_id.email,
-            'due_date': due_date,
-            'expire': expire_date,
+            'due_date': due_date if due_date > 0 else 86400,
+            'expire': expire_date if expire_date > 0 else 86400 + 7200,
         }
         if partner_id.mobile:
             meta['psu_phone'] = partner_id.mobile
