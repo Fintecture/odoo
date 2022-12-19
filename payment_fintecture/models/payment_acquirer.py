@@ -386,14 +386,6 @@ class PaymentAcquirer(models.Model):
             'psu_email': partner_id.email,
             'due_date': due_date,
             'expire': expire_date,
-            "reconciliation": {
-                "level": "key",
-                "match_amount": True,
-                'key': "{}.{}@odoo.fintecture.com".format(
-                    unique_key,
-                    str(self.fintecture_pis_app_id)
-                ),
-            }
         }
         if partner_id.mobile:
             meta['psu_phone'] = partner_id.mobile
@@ -419,8 +411,16 @@ class PaymentAcquirer(models.Model):
         _logger.debug('|PaymentAcquirer| used language: {0}'.format(lang_code))
         _logger.debug('|PaymentAcquirer| used meta: {0}'.format(meta))
         _logger.debug('|PaymentAcquirer| used data: {0}'.format(data))
-        _logger.debug('|PaymentAcquirer| virtual beneficiary: {0}'.format(data))
+        _logger.debug('|PaymentAcquirer| virtual beneficiary: {0}'.format(self.fintecture_invoice_viban))
         if self.fintecture_invoice_viban:
+            meta['reconciliation'] = {
+                "level": "key",
+                "match_amount": True,
+                'key': "{}.{}@odoo.fintecture.com".format(
+                    unique_key,
+                    str(self.fintecture_pis_app_id)
+                ),
+            }
             pay_response = fintecture.PIS.connect(
                 redirect_uri=redirect_url,
                 state=state,
