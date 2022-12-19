@@ -424,14 +424,14 @@ class PaymentAcquirer(models.Model):
             pay_response = fintecture.PIS.connect(
                 redirect_uri=redirect_url,
                 state=state,
-                with_virtualbeneficiary=self.fintecture_invoice_viban,
+                with_virtualbeneficiary='true',
                 meta=meta,
                 data=data,
                 language=lang_code,
             )
         else:
             pay_response = fintecture.PIS.connect(
-                with_virtualbeneficiary='0',
+                with_virtualbeneficiary='false',
                 redirect_uri=redirect_url,
                 state=state,
                 meta=meta,
