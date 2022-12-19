@@ -140,7 +140,7 @@
                 <group attrs="{'invisible': [('provider', '!=', 'fintecture')]}" string="Fintecture Configuration">
                     <div class="alert alert-info" role="alert" style="margin-bottom:0px;"
                          attrs="{'invisible': [('fintecture_invoice_viban', '=', False), ('fintecture_sale_viban', '=', False)]}">
-                        <div>You need a Fintecture bank account available for works properly.</div>
+                        <div>Fintecture Internal Account is mandatory to use Virutal IBAN feature.</div>
                     </div>
                     <field name="fintecture_sale_viban"/>
                     <field name="fintecture_sale_link_qr"/>
