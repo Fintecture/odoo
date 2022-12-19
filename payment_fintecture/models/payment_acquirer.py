@@ -419,6 +419,7 @@ class PaymentAcquirer(models.Model):
         _logger.debug('|PaymentAcquirer| used language: {0}'.format(lang_code))
         _logger.debug('|PaymentAcquirer| used meta: {0}'.format(meta))
         _logger.debug('|PaymentAcquirer| used data: {0}'.format(data))
+        _logger.debug('|PaymentAcquirer| virtual beneficiary: {0}'.format(data))
 
         pay_response = fintecture.PIS.connect(
             redirect_uri=redirect_url,
