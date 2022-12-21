@@ -303,8 +303,10 @@ class PaymentTransaction(models.Model):
         self.acquirer_reference = pay_data['meta']['session_id']
         self.fintecture_payment_intent = pay_data['meta']['session_id']
         self.fintecture_url = pay_data['meta']['url']
-        if 'virtual_beneficiary' in pay_data:
-            self.fintecture_virtual_beneficiary = json.dumps(pay_data['virtual_beneficiary'])
+        if 'data' in pay_data and 'attributes' in pay_data['data']:
+            self.fintecture_virtual_beneficiary = json.dumps(
+                pay_data['data']['attributes']['virtual_beneficiary']
+            )
         return pay_data
 
     def fintecture_create_qr(self):
