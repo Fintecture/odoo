@@ -24,8 +24,6 @@ odoo.define('payment_fintecture.payment_form', require => {
             console.log('|PaymentFintecture| (payment_form) processingValues: ', JSON.stringify(processingValues));
             console.log('|PaymentFintecture| (payment_form) arguments: ', JSON.stringify(arguments));
 
-            // TODO: validate received values of app_id, app_secret, private_key and other, like other payment acquire do...
-
             if (provider !== 'fintecture') {
                 return this._super(...arguments);
             }
