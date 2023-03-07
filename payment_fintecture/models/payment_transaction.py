@@ -258,8 +258,7 @@ class PaymentTransaction(models.Model):
     def _fintecture_create_request_pay(self, state=None):
         _logger.info('|PaymentTransaction| Creating the URL for request to pay...')
 
-        _logger.debug('|PaymentTransaction| _fintecture_create_request_pay(): state: {}'
-                      .format(state))
+        _logger.debug('|PaymentTransaction| _fintecture_create_request_pay(): state: {}'.format(state))
 
         # look for connect invoice to this transaction
         am = self.env['account.move'].search([('transaction_ids', 'in', self.id)], limit=1)
@@ -271,10 +270,12 @@ class PaymentTransaction(models.Model):
             invoice_due_date = int((am.invoice_date_due - date.today()).total_seconds())
             invoice_expire_date = int(invoice_due_date + 86400)  # one day more
 
-        _logger.debug('|PaymentTransaction| _fintecture_create_request_pay(): invoice_due_date: {}'
-                      .format(invoice_due_date))
-        _logger.debug('|PaymentTransaction| _fintecture_create_request_pay(): invoice_expire_date: {}'
-                      .format(invoice_expire_date))
+        _logger.debug('|PaymentTransaction| _fintecture_create_request_pay(): invoice_due_date: {}'.format(
+            invoice_due_date
+        ))
+        _logger.debug('|PaymentTransaction| _fintecture_create_request_pay(): invoice_expire_date: {}'.format(
+            invoice_expire_date
+        ))
 
         try:
             lang = self.partner_lang.iso_code

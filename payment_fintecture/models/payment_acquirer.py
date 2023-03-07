@@ -216,7 +216,7 @@ class PaymentAcquirer(models.Model):
 
     # === ACTION METHODS === #
 
-    def action_fintecture_ais_connect(self, menu_id=None):
+    def action_fintecture_ais_connect(self):
         """ Create a Fintecture Connect account and redirect the user to the next onboarding step.
 
         If the acquirer is already enabled, close the current window. Otherwise, generate a Fintecture
@@ -227,8 +227,6 @@ class PaymentAcquirer(models.Model):
         Note: This method serves as a hook for modules that would fully implement Fintecture Connect.
         Note: self.ensure_one()
 
-        :param int menu_id: The menu from which the user started the onboarding step, as an
-                            `ir.ui.menu` id.
         :return: The next step action
         :rtype: dict
         """
@@ -254,15 +252,9 @@ class PaymentAcquirer(models.Model):
 
             base_url = self.get_base_url()
             redirect_uri = f'{url_join(base_url, CALLBACK_URL)}'
-            menu_id = menu_id or self.env.ref('payment.payment_acquirer_menu').id
-            action_id = self.env.ref('payment.action_payment_acquirer').id
-            state = 'ais_connect,{},{},{}'.format(uuid.uuid4().hex, menu_id, action_id)
-
-            _logger.debug('|PaymentAcquirer| base_url: {0}'.format(base_url))
-            _logger.debug('|PaymentAcquirer| redirect_uri: {0}'.format(redirect_uri))
-            _logger.debug('|PaymentAcquirer| menu_id: {0}'.format(menu_id))
-            _logger.debug('|PaymentAcquirer| action_id: {0}'.format(action_id))
-            _logger.debug('|PaymentAcquirer| state: {0}'.format(state))
+            state = '{}/0/ais_connect'.format(
+                str(self.company_id.id)
+            )
 
             self._prepare_fintecture_environment(app_type='ais')
 
