@@ -72,8 +72,6 @@ class FintectureController(http.Controller):
 
         acquirer_model = request.env['payment.acquirer'].sudo().with_user(SUPERUSER_ID)
         transaction_model = request.env['payment.transaction'].sudo().with_user(SUPERUSER_ID)
-        payment_model = request.env['account.payment'].sudo().with_user(SUPERUSER_ID)
-        payment_method_model = request.env['account.payment.method'].sudo().with_user(SUPERUSER_ID)
 
         if rs['operation'] == 'ais_connect':
             customer_id = kwargs.get('customer_id')
@@ -90,101 +88,18 @@ class FintectureController(http.Controller):
             ], limit=1)
             if fintecture_acquirer:
                 fintecture_acquirer.callback_ais_oauth(customer_id, code, provider)
-
-                action = {
-                    'type': 'ir.actions.act_url',
-                    'res_model': 'payment.acquirer',
-                    'views': [[False, 'form']],
-                    'res_id': fintecture_acquirer.id,
-                    'view_type': 'kanban',
-                    'view_mode': 'kanban,tree',
-                    'target': 'self',
-                }
-                # return action
-
-                _logger.debug('|FintectureController| fintecture_acquirer: ({})...'.format(fintecture_acquirer))
-                redirect_uri = '/web#id={}&menu_id={}&action={}&view_type=form&model=payment.acquirer' \
-                    .format(fintecture_acquirer.id, rs['menu_id'], rs['action_id'])
-                _logger.debug('|FintectureController| redirect_url: ({})...'.format(redirect_uri))
-
+                redirect_uri = '/web#id={}&menu_id={}&action={}&view_type=form&model=payment.acquirer'.format(
+                    fintecture_acquirer.id,
+                    str(request.env.ref('payment.payment_acquirer_menu').id),
+                    str(request.env.ref('payment.action_payment_acquirer').id),
+                )
                 return request.redirect(redirect_uri)
-
-        elif rs['operation'] == 'payment':
-
-            fintecture_payment_method = payment_method_model.search([
-                ('code', '=', PAYMENT_ACQUIRER_NAME),
-            ], limit=1)
-            _logger.debug('|FintectureController| fintecture_payment_method: ({})...'.format(fintecture_payment_method))
-            if not fintecture_payment_method:
-                raise UserWarning('Fintecture is not installed as an account payment method!!')
-
-            account_payment = payment_model.search([
-                ('payment_method_id', '=', fintecture_payment_method.id),
-                ('payment_reference', '=', session_id),
-            ], limit=1)
-            _logger.debug('|FintectureController| account_payment: ({})...'.format(account_payment))
-
-            redirect_uri = '/web#id={}'.format(account_payment.id)
-            if rs['menu_id']:
-                redirect_uri += '&menu_id={}'.format(rs['menu_id'])
-            if rs['action_id']:
-                redirect_uri += '&action={}'.format(rs['action_id'])
-            redirect_uri += '&view_type=form&model=account.payment'
-
-            _logger.debug('|FintectureController| redirect_url: ({})...'.format(redirect_uri))
-
-            # do not notify about a payment status, created successfully or other??
-
-            return werkzeug.utils.redirect(redirect_uri)
-
-        elif rs['operation'] == 'invoice':
-
-            fintecture_acquirer = acquirer_model.search([
-                ('provider', '=', PAYMENT_ACQUIRER_NAME),
-            ], limit=1)
-            if not fintecture_acquirer:
-                _logger.warning('|FintectureController| Fintecture does not exists as any payment acquirer...')
-                return ''
-            _logger.debug('|FintectureController| fintecture_callback(): fintecture_acquirer: {}'
-                          .format(fintecture_acquirer))
-
-            tx = transaction_model.search([
-                ('acquirer_id', '=', fintecture_acquirer.id),
-                ('acquirer_reference', '=', session_id),
-            ], limit=1)
-            if not tx:
-                _logger.warning('|FintectureController| Callback handler receives a session_id={} '
-                                'with not registered transaction'.format(session_id))
-                return ''
-            _logger.debug('|FintectureController| fintecture_callback(): tx: {}'.format(tx))
-
-            # TODO: fix
-            # redirect_uri = '/web#id={}'.format(tx.id)
-            # if rs['menu_id']:
-            #     redirect_uri += '&menu_id={}'.format(rs['menu_id'])
-            # if rs['action_id']:
-            #     redirect_uri += '&action={}'.format(rs['action_id'])
-            # redirect_uri += '&view_type=form&model=account.move'
-
-            # _logger.debug('|FintectureController| redirect_url: ({})...'.format(redirect_uri))
-
-            landing_route = tx.landing_route
-            _logger.debug('|FintectureController| fintecture_callback(): landing_route: {}'.format(landing_route))
-
-            return werkzeug.utils.redirect(landing_route)
-
         elif status == 'payment_created' and session_id:
-            values = {
-                'status': status,
-                'session_id': session_id,
-            }
-            # return request.render("payment_fintecture.success_payment", values)
-            return 'Payment Successfully. Here should appears a thank you page for the processed payment.'
-
+            return werkzeug.utils.redirect('/payment/process')
         else:
             _logger.error(
                 '|FintectureController| Callback handler receives an unknown state ({0}) operation ({1}) for process...'
-                    .format(state, rs['operation'])
+                .format(state, rs['operation'])
             )
 
         return werkzeug.utils.redirect('/web')
@@ -247,21 +162,16 @@ class FintectureController(http.Controller):
         _logger.debug('|FintectureController| _parse_state_param(): state: ({})...'.format(state))
         _logger.debug('|FintectureController| _parse_state_param(): state_params: ({})...'.format(state_params))
 
-        company = state_params[0]
-        connection_id = state_params[1] if len(state_params) > 1 else False
-        menu_id = state_params[2] if len(state_params) > 2 else False
-        action_id = state_params[3] if len(state_params) > 3 else False
-        _logger.debug('|FintectureController| _parse_state_param():  connection_id: ({})...'.format(connection_id))
-        _logger.debug('|FintectureController| _parse_state_param():  menu_id: ({})...'.format(menu_id))
-        _logger.debug('|FintectureController| _parse_state_param():  action_id: ({})...'.format(action_id))
-
-        # TODO: validate 'operation' variable
+        company = request.env['res.company'].sudo().with_user(SUPERUSER_ID).browse(int(state_params[0]))
+        if len(state_params) > 1 and state_params[1] != '0':
+            transaction = request.env['payment.transaction'].sudo().with_user(SUPERUSER_ID).browse(int(state_params[1]))
+        else:
+            transaction = False
 
         return {
             'company': company,
-            'connection_id': connection_id,
-            'menu_id': menu_id,
-            'action_id': action_id,
+            'transaction': transaction,
+            'operation': state_params[2] if len(state_params) > 2 else False
         }
 
     @staticmethod
