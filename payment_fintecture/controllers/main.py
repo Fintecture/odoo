@@ -161,7 +161,7 @@ class FintectureController(http.Controller):
             return False
 
         company = request.env['res.company'].sudo().with_user(SUPERUSER_ID).browse(int(state_params[0]))
-        if state_params[1] != '0':
+        if len(state_params) > 1 and state_params[1] != '0':
             transaction = request.env['payment.transaction'].sudo().with_user(SUPERUSER_ID).browse(int(state_params[1]))
         else:
             transaction = False
