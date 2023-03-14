@@ -1,11 +1,8 @@
 import collections
 import logging
 import pprint
-import fintecture
 
-from fintecture import util as fintecture_utils
-from odoo.addons.payment_fintecture.const import CALLBACK_URL, WEBHOOK_URL, CHECKOUT_URL, VALIDATION_URL, \
-    PAYMENT_ACQUIRER_NAME
+from odoo.addons.payment_fintecture.const import CALLBACK_URL, WEBHOOK_URL, PAYMENT_ACQUIRER_NAME
 
 from odoo import http, SUPERUSER_ID
 from odoo.http import request
@@ -62,7 +59,7 @@ class FintectureController(http.Controller):
                 )
                 return request.redirect(redirect_uri)
         elif status == 'payment_created' and session_id:
-            return request.redirect('/payment/process')
+            return request.redirect('/payment/status')
         else:
             _logger.error(
                 '|FintectureController| Callback handler receives an unknown state ({0}) operation ({1}) for process...'
