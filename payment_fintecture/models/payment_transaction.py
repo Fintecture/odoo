@@ -116,9 +116,9 @@ class PaymentTransaction(models.Model):
             }
 
         try:
-            state = '{}/0/{}'.format(
+            state = '{}/{}'.format(
                 str(self.company_id.id),
-                uuid.uuid4().hex
+                str(self.id)
             )
             req_pay_data = self._fintecture_create_request_pay(state)
             req_pay_data = req_pay_data['meta']
