@@ -60,8 +60,12 @@ class FintectureController(http.Controller):
                 return request.redirect(redirect_uri)
         elif status == 'payment_created' and session_id:
             tx_ids = request.session.get("__payment_tx_ids__", [])
+            _logger.debug('|FintectureController| Transaction received: ({})...'.format(str(rs['transaction'])))
             if rs['transaction'] and not tx_ids:
                 request.session.__payment_tx_ids__ = [rs['transaction'].id]
+            _logger.debug('|FintectureController| Transaction landing route: ({})...'.format(
+                str(rs['transaction'].landing_route))
+            )
             if rs['transaction'] and rs['transaction'].landing_route:
                 return request.redirect(rs['transaction'].landing_route)
             return request.redirect('/payment/status')
