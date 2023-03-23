@@ -1,20 +1,22 @@
 import base64
 import logging
-import uuid
+import unicodedata
 
-import requests
 import fintecture
-
-from werkzeug.urls import url_encode, url_join
+import requests
+from odoo.addons.payment_fintecture import utils as fintecture_utils
+from odoo.addons.payment_fintecture.const import API_VERSION, CALLBACK_URL, \
+    WEBHOOK_URL, PAYMENT_ACQUIRER_NAME
+from werkzeug.urls import url_join
 
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError, UserError
 
-from odoo.addons.payment_fintecture import utils as fintecture_utils
-from odoo.addons.payment_fintecture.const import API_VERSION, PROXY_URL, WEBHOOK_HANDLED_EVENTS, CALLBACK_URL, \
-    WEBHOOK_URL, PAYMENT_ACQUIRER_NAME
-
 _logger = logging.getLogger(__name__)
+
+
+def normalize_accents(text):
+    return unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('utf-8')
 
 
 class PaymentAcquirer(models.Model):
@@ -374,7 +376,7 @@ class PaymentAcquirer(models.Model):
         if not unique_key:
             unique_key = "customer.{}".format(str(partner_id.id))
         meta = {
-            'psu_name': partner_id.name,
+            'psu_name': normalize_accents(partner_id.name),
             'psu_email': partner_id.email,
             'due_date': due_date if due_date > 0 else 86400,
             'expire': expire_date if expire_date > 0 else 86400 + 7200,
@@ -386,11 +388,11 @@ class PaymentAcquirer(models.Model):
                 'country': partner_id.country_id.code
             }
             if partner_id.street:
-                meta['psu_address']['street'] = partner_id.street
+                meta['psu_address']['street'] = normalize_accents(partner_id.street)
             if partner_id.zip:
                 meta['psu_address']['zip'] = partner_id.zip
             if partner_id.city:
-                meta['psu_address']['city'] = partner_id.city
+                meta['psu_address']['city'] = normalize_accents(partner_id.city)
 
         data = {
             'type': 'request-to-pay',
