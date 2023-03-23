@@ -1,6 +1,6 @@
 import base64
 import logging
-import uuid
+import unicodedata
 
 import requests
 import fintecture
@@ -15,6 +15,10 @@ from odoo.addons.payment_fintecture.const import API_VERSION, PROXY_URL, WEBHOOK
     WEBHOOK_URL, PAYMENT_ACQUIRER_NAME, CHECKOUT_URL
 
 _logger = logging.getLogger(__name__)
+
+
+def normalize_accents(text):
+    return unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('utf-8')
 
 
 class PaymentAcquirer(models.Model):
@@ -374,7 +378,7 @@ class PaymentAcquirer(models.Model):
         if not unique_key:
             unique_key = "customer.{}".format(str(partner_id.id))
         meta = {
-            'psu_name': partner_id.name,
+            'psu_name': normalize_accents(partner_id.name),
             'psu_email': partner_id.email,
             'due_date': due_date if due_date > 0 else 86400,
             'expire': expire_date if expire_date > 0 else 86400 + 7200,
@@ -384,9 +388,9 @@ class PaymentAcquirer(models.Model):
         if partner_id.country_id and partner_id.street and partner_id.zip and partner_id.city:
             meta['psu_address'] = {
                 'country': partner_id.country_id.code,
-                'street': partner_id.street,
+                'street': normalize_accents(partner_id.street),
                 'zip': partner_id.zip,
-                'city': partner_id.city,
+                'city': normalize_accents(partner_id.city),
             }
 
         data = {

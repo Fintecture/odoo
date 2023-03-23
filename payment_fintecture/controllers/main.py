@@ -98,8 +98,8 @@ class FintectureController(http.Controller):
         elif status == 'payment_created' and session_id:
             tx_ids = request.session.get("__payment_tx_ids__", [])
             if rs['transaction'] and not tx_ids:
-                request.session.__payment_tx_ids__ = [rs['transaction'].id]
-            if rs['transaction'] and rs['transaction'].landing_route:
+                request.session['__payment_tx_ids__'] = list(rs['transaction'].id)
+            if rs['transaction'] and rs['transaction'].landing_route and not rs['transaction'].sale_order_ids:
                 return request.redirect(rs['transaction'].landing_route)
             return werkzeug.utils.redirect('/payment/process')
         else:
