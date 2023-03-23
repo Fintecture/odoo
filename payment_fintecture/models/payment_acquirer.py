@@ -439,8 +439,6 @@ class PaymentAcquirer(models.Model):
     def fintecture_webhook_signature(self, payload, digest, signature, request_id):
         _logger.info('|PaymentAcquirer| Retrieve webhook content and validate signature...')
 
-        # TODO: take into account when decide to validate AIS webhook
-        #  for now we only validate PIS webhooks; refactorize behaviour
         self._prepare_fintecture_environment(app_type='pis')
 
         if not fintecture.private_key:

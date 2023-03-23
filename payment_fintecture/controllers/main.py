@@ -59,7 +59,10 @@ class FintectureController(http.Controller):
                 )
                 return request.redirect(redirect_uri)
         elif status == 'payment_created' and session_id:
+            logging.info(session_id)
             tx_ids = request.session.get("__payment_tx_ids__", [])
+            logging.info(tx_ids)
+            logging.info(rs)
             if rs['transaction'] and not tx_ids:
                 request.session.__payment_tx_ids__ = [rs['transaction'].id]
             if rs['transaction'] and rs['transaction'].landing_route:
